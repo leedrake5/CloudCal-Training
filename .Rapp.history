@@ -1,0 +1,521 @@
+forest.model <- randomForest(Concentration~Fe.K.alpha+., data=simple.cal.table, importance=TRUE, ntrees=500)#
+forest.predict <- predict(forest.model, new.data=simple.cal.table, proximity=FALSE)#
+plot(forest.predict~cal.table$Concentration)
+fluorescence.lines <- read.csv(file="~/GitHub/CloudCal/data/FluorescenceLines.csv")
+choosen.elements <- c("Ca.K.alpha", "Ti.K.alpha", "Pb.L.beta")
+choosen.elements.simp <- gsub(".K.alpha", "", choosen.elements)#
+    choosen.elements.simp <- gsub(".K.beta", "", choosen.elements.simp)#
+    choosen.elements.simp <- gsub(".L.alpha", "", choosen.elements.simp)#
+    choosen.elements.simp <- gsub(".L.beta", "", choosen.elements.simp)#
+    choosen.elements.simp <- gsub(".M.line", "", choosen.elements.simp)#
+    choosen.elements.simp <- gsub(".K12", "", choosen.elements.simp)#
+    choosen.elements.simp <- gsub(".L1", "", choosen.elements.simp)
+choosen.elements.simp
+valelements <- as.vector(as.character(choosen.elements.simp[match(as.character(fluorescence.lines$Symbol), choosen.elements.simp)]))
+valelements
+elements <- c(valelements, choosen.elements.simp[!(choosen.elements.simp %in% valelements)])
+elements
+valelements <- na.omit(as.vector(as.character(choosen.elements.simp[match(as.character(fluorescence.lines$Symbol), choosen.elements.simp)])))
+valelements
+valelements <- as.vector(as.character(choosen.elements.simp[match(as.character(fluorescence.lines$Symbol), choosen.elements.simp)]), na.rm=TRUE)
+?as.vector
+?c
+valelements <- as.vector(as.character(choosen.elements.simp[match(as.character(fluorescence.lines$Symbol), choosen.elements.simp)]))
+elements <- valelements[!is.na(valelements)]
+elements
+choosen.elements <- c("Ca.K.alpha", "Ti.K.alpha", "Pb.L.beta", "Al.K.alpha")
+choosen.elements.simp <- gsub(".K.alpha", "", choosen.elements)#
+    choosen.elements.simp <- gsub(".K.beta", "", choosen.elements.simp)#
+    choosen.elements.simp <- gsub(".L.alpha", "", choosen.elements.simp)#
+    choosen.elements.simp <- gsub(".L.beta", "", choosen.elements.simp)#
+    choosen.elements.simp <- gsub(".M.line", "", choosen.elements.simp)#
+    choosen.elements.simp <- gsub(".K12", "", choosen.elements.simp)#
+    choosen.elements.simp <- gsub(".L1", "", choosen.elements.simp)#
+    valelements <- as.vector(as.character(choosen.elements.simp[match(as.character(fluorescence.lines$Symbol), choosen.elements.simp)]))#
+    elements <- valelements[!is.na(valelements)]#
+    elements
+valelements <- as.vector(as.character(choosen.elements[match(as.character(fluorescence.lines$Symbol), choosen.elements.simp)]))
+valelements
+elements <- valelements[!is.na(valelements)]
+elements
+choosen.elements <- c("Ca.K.alpha", "Ti.K.alpha", "Pb.L.beta", "Al.K.alpha", "Pb.L.alpha")
+choosen.elements.simp <- gsub(".K.alpha", "", choosen.elements)#
+    choosen.elements.simp <- gsub(".K.beta", "", choosen.elements.simp)#
+    choosen.elements.simp <- gsub(".L.alpha", "", choosen.elements.simp)#
+    choosen.elements.simp <- gsub(".L.beta", "", choosen.elements.simp)#
+    choosen.elements.simp <- gsub(".M.line", "", choosen.elements.simp)#
+    choosen.elements.simp <- gsub(".K12", "", choosen.elements.simp)#
+    choosen.elements.simp <- gsub(".L1", "", choosen.elements.simp)#
+    valelements <- as.vector(as.character(choosen.elements[match(as.character(fluorescence.lines$Symbol), choosen.elements.simp)]))#
+    elements <- valelements[!is.na(valelements)]#
+    elements
+choosen.elements.simp
+?match
+line_strip <- function(elements){#
+        elements <- gsub(".K.alpha", "", elements)#
+        elements <- gsub(".K.beta", "", elements)#
+        elements <- gsub(".L.alpha", "", elements)#
+        elements <- gsub(".L.beta", "", elements)#
+        elements <- gsub(".M.line", "", elements)#
+        elements <- gsub(".K12", "", elements)#
+        elements <- gsub(".L1", "", elements)#
+        elements#
+    }
+line_strip(choosen.elements)
+new.elements <- choosen.elements[sort(order(line_strip(choosen.elements))[as.character(fluorescence.lines$Symbol)])]
+new.elements
+new.elements <- choosen.elements[sort(as.character(fluorescence.lines$Symbol)])]
+new.elements <- choosen.elements[sort(as.character(fluorescence.lines$Symbol)]
+new.elements <- choosen.elements[sort(as.character(fluorescence.lines$Symbol))]
+new.elements
+new.elements <- line_strip(choosen.elements)[sort(as.character(fluorescence.lines$Symbol))]
+new.elements
+y <- choosen.elements
+y
+x <- as.character(fluorescence.lines$Symbol)
+x
+y[sort(order(y)[x])]
+y
+x
+y[sort(order((line_strip(y))[x])]
+y[sort(order(line_strip(y))[x])]
+line_strip(y)
+order(line_strip(y))
+y[sort(order(line_strip(y))[order(x)])]
+order(x)
+head(sluorescence.lines)
+head(fluorescence.lines)
+element <- "Ca"
+fluorescence.lines[Symbol %in% element,]
+fluorescence.lines %>% Symbol %in% element
+subset(fluorescence.lines, Symbol==element)
+subset(fluorescence.lines, Symbol==element)$AtomicNumber
+atomic_order <- function(element){#
+        subset(fluorescence.lines, Symbol==element)$AtomicNumber#
+    }
+atomic_order_vector <- function(elements){#
+        sapply(elements, atomic_order)#
+    }
+elements
+atomic_order_vector(elements)
+atomic_order("Ca")
+atomic_order("U")
+atomic_order_vector <- function(elements){#
+        as.vector(sapply(elements, atomic_order))#
+    }
+atomic_order_vector(elements)
+atomic_order_vector <- function(elements){#
+        unlist(sapply(elements, atomic_order))#
+    }
+atomic_order_vector(elements)
+atomic_order_vector <- function(elements){#
+        unlist(lapply(elements, atomic_order))#
+    }
+atomic_order_vector(elements)
+lapply(elements, atomic_order)
+elements
+atomic_order <- function(element){#
+        subset(fluorescence.lines, Symbol==line_strip(element))$AtomicNumber#
+    }#
+    atomic_order_vector <- function(elements){#
+        unlist(lapply(elements, atomic_order))#
+    }
+lapply(elements, atomic_order)
+choosen.elements
+atomic_order_vector(choosen.elements)
+y
+x <- atomic_order_vector(choosen.elements)
+y[sort(order(line_strip(y))[order(x)])]
+y[sort(order(line_strip(y))[x])]
+x
+order(y)[x]
+ly
+y
+y[sort(order(atomic_order(y))[x])]
+y[sort(order(atomic_order_vector(y)))]
+atomic_order_vector(y)
+order(y)
+y
+order(y)[x]
+x
+order(y) <- x
+x[order(match(x,y))]
+y[order(match(x,y))]
+y[order(match(x,atomic_order_vector(y)))]
+element.frame <- data.frame(elements=choosen.elements, order=atomic_order_vector(choosen.elements))
+element.frame
+element.frame[sort(element.frame$order),]
+sort(element.frame$order)
+element.frame[order(element.frame$order),]
+data.frame(elements=choosen.elements, order=atomic_order_vector(choosen.elements))$elements
+as.vector(data.frame(elements=choosen.elements, order=atomic_order_vector(choosen.elements))$elements)
+element.frame[order(element.frame$order),]$elements
+as.vector(element.frame[order(element.frame$order),]$elements)
+shiny::runApp('/Users/lee/GitHub/CloudCal', launch.browser=TRUE)
+head(fluorescence.lines)
+library(caret)#
+library(ggplot2)#
+library(doMC)#
+library(randomForest)#
+registerDoMC(cores=4)#
+testcal <- readRDS("~/Desktop/USDEarthCalTrain.quant")#
+#
+# prepare simple test suite#
+control <- trainControl(method="cv", number=5)#
+seed <- 7#
+metric <- "RMSE"#
+#
+# Linear regression#
+#
+cal.table <- data.frame(testcal[["Intensities"]], Concentration=testcal[["Values"]]$Fe.K.alpha)#
+set.seed(seed)#
+fit.lm <- train(Concentration~., data=cal.table, method="lm", metric=metric, preProc=c("center", "scale"), trControl=control)#
+importance <- varImp(fit.lm, scale=FALSE)#
+importance.frame <- as.data.frame(importance$importance)#
+#
+pull_test <- function(a.vector, a.value.position){#
+    scaled <- scale(a.vector)[,1]#
+    value <- scaled[a.value.position]#
+    scale.vector <- scaled[-a.value.position]#
+    ZScore <- (value-mean(scale.vector))/sd(scale.vector)#
+    pvalue <- pnorm(-abs(ZScore))#
+    is.sig <- pvalue < 0.05#
+    data.frame(Value=a.vector[a.value.position], ZScore=ZScore, pvalue=pvalue, Sig=is.sig)#
+}#
+Z_frame <- function(a.vector){#
+    do.call("rbind", lapply(seq(1, length(a.vector), 1), function(x) pull_test(a.vector, x)))#
+}#
+Z_choose <- function(a.vector){#
+    full <- Z_frame(a.vector)#
+    full[full$Sig,]#
+}#
+#
+variable_select <- function(intensities, values, analyte){#
+    control <- trainControl(method="cv", number=5)#
+    seed <- 7#
+    metric <- "RMSE"#
+    set.seed(seed)#
+    cal.table <- data.frame(intensities, Concentration=values[,analyte])#
+    fit.lm <- train(Concentration~., data=cal.table, method="lm", metric=metric, preProc=c("center", "scale"), trControl=control)#
+    importance <- varImp(fit.lm, scale=FALSE)#
+    importance.frame <- as.data.frame(importance$importance)#
+    elements <- rownames(importance$importance)#
+    elements[as.numeric(rownames(Z_choose(importance.frame$Overall)))]#
+}#
+variable_select_short <- function(importance){#
+    importance.frame <- as.data.frame(importance$importance)#
+    elements <- rownames(importance$importance)#
+    elements[as.numeric(rownames(Z_choose(importance.frame$Overall)))]#
+}#
+#
+simple.cal.table <- cal.table[,c("Concentration", "Fe.K.alpha", variable_select(intensities=testcal[["Intensities"]], values=testcal[["Values"]], analyte="Fe.K.alpha"))]#
+#
+best.model <- lm(Concentration~Fe.K.alpha + ., data=simple.cal.table)#
+forest.model <- randomForest(Concentration~Fe.K.alpha+., data=simple.cal.table, ntree=1000, replace=TRUE)#
+#
+best.predict <- predict(best.model, new.data=simple.cal.table)#
+forest.predict <- predict(forest.model, new.data=simple.cal.table, proximity=FALSE)#
+#
+forest.model <- randomForest(Concentration~Fe.K.alpha+., data=simple.cal.table, importance=TRUE, ntrees=500)#
+forest.predict <- predict(forest.model, new.data=simple.cal.table, proximity=FALSE)#
+plot(forest.predict~cal.table$Concentration)#
+#
+importance.ggplot <- ggplot(importance.frame) + geom_density(aes(x=Overall))
+summary(forest.model)
+ls(forest.model)
+forest.model$rsq
+ls(forest.model)
+forest.model$call
+forest.model$coefs
+forest.model$y
+forest.model$call
+forest.model$predicted
+y <- simple.cal.table()[,"Concentration"]#
+1 - sum((y-forest.model$predicted)^2)/sum((y-mean(y))^2)
+head(simple.cal.table)
+y <- simple.cal.tabl[,"Concentration"]#
+1 - sum((y-forest.model$predicted)^2)/sum((y-mean(y))^2)
+y <- simple.cal.table[,"Concentration"]#
+1 - sum((y-forest.model$predicted)^2)/sum((y-mean(y))^2)
+summary(best.model)
+summary(best.model)$r.squared
+r2.vector <- c(.97, .94, .99, .34)
+which.max(r2.vector)
+element.line <- "Al.K.alpha"
+element <- strsplit(x=element.line, split="\\.")[[1]][1]
+element
+strsplit(x=element.line, split="\\.")[[1]]
+?do.call
+test <- c("Na"="Na.K.alpha", "Mg"="Mg.K.alpha")
+test
+test["Na"]
+test["Mg"]
+kalphaLines <- c("Na"="Na.K.alpha",  "Mg"="Mg.K.alpha", "Al"="Al.K.alpha", "Si"="Si.K.alpha", "P"="P.K.alpha", "S"="S.K.alpha", "Cl"="Cl.K.alpha", "Ar"="Ar.K.alpha", "K"="K.K.alpha", "Ca"="Ca.K.alpha", "Sc"="Sc.K.alpha", "Ti"="Ti.K.alpha", "V"="V.K.alpha", "Cr"="Cr.K.alpha", "Mn"="Mn.K.alpha", "Fe"="Fe.K.alpha", "Co"="Co.K.alpha", "Ni"="Ni.K.alpha", "Cu"="Cu.K.alpha", "Zn"="Zn.K.alpha", "Ga"="Ga.K.alpha", "Ge"="Ge.K.alpha", "As"="As.K.alpha", "Se"="Se.K.alpha", "Br"="Br.K.alpha", "Kr"="Kr.K.alpha", "Rb"="Rb.K.alpha", "Sr"="Sr.K.alpha", "Y"="Y.K.alpha", "Zr"="Zr.K.alpha", "Nb"="Nb.K.alpha", "Mo"="Mo.K.alpha", "Ru"="Ru.K.alpha", "Rh"="Rh.K.alpha", "Pd"="Pd.K.alpha", "Ag"="Ag.K.alpha", "Cd"="Cd.K.alpha", "In"="In.K.alpha", "Sn"="Sn.K.alpha", "Sb"="Sb.K.alpha", "Te"="Te.K.alpha", "I"="I.K.alpha", "Xe"="Xe.K.alpha", "Cs"="Cs.K.alpha", "Ba"="Ba.K.alpha", "La"="La.K.alpha", "Ce"="Ce.K.alpha", "Pr"="Pr.K.alpha", "Nd"="Nd.K.alpha")
+kalphaLines["Na"]
+testref <- read.csv(file="~/Desktop/testref.csv")
+head(testref)
+subset(testref, Orbital=="K" && Line=="alpha")$Element
+as.vector(subset(testref, Orbital=="K" && Line=="alpha")$Element)
+as.character(subset(testref, Orbital=="K" && Line=="alpha")$Element)
+kalphaLines
+kalphaLines[as.character(subset(testref, Orbital=="K" && Line=="alpha")$Element)]
+as.vector(kalphaLines[as.character(subset(testref, Orbital=="K" && Line=="alpha")$Element)])
+test.vec <- as.vector(kalphaLines[as.character(subset(testref, Orbital=="K" && Line=="alpha")$Element)])
+test.vec <- test.vec[!is.na(test.vec)]
+test.vec
+choosen.elements <- test.vec
+element.frame <- data.frame(elements=choosen.elements, order=atomic_order_vector(choosen.elements))
+as.vector(element.frame[order(element.frame$order),]$elements)
+shiny::runApp('/Users/lee/GitHub/CloudCal', launch.browser=TRUE)
+testf <- read.csv(file="~/Desktop/testref.csv")
+head(testf)
+testf %>% filter("K" %in% Orbital, "alpha" %in% Line)
+testf[,"K" %in% Orbital, "alpha" %in% Line]
+testf[,Orbital=="K" && Line=="alpha"]
+testf[,testf$Orbital=="K" && testf$Line=="alpha"]
+testf %>% filter(Orbital=="K" && Line=="alpha")
+subset(testf, "K" %in% Orbital, "alpha" %in% Line)
+subset(testf, Orbital=="K" && Line=="alpha")
+subset(testf, Orbital %in% "K" | Line %in% "alpha")
+subset(testf, "K" %in% Orbital | "alpha" %in% Line)
+subset(testf, K %in% Orbital | alpha %in% Line)
+subset(testf, Orbital %in% K | Line %in% alpha)
+subset(testf, Orbital=="K" | Line=="alpha")
+subset(testf, Orbital=="K" & Line=="alpha")
+shiny::runApp('/Users/lee/GitHub/CloudCal', launch.browser=TRUE)
+testf <- read.csv(file="~/Desktop/testref.csv")
+test.set <- subset(testf, Orbital=="K" & Line=="alpha")
+test.set$Element
+as.vector(test.set$Element)
+kalphaLines <- c("Na"="Na.K.alpha",  "Mg"="Mg.K.alpha", "Al"="Al.K.alpha", "Si"="Si.K.alpha", "P"="P.K.alpha", "S"="S.K.alpha", "Cl"="Cl.K.alpha", "Ar"="Ar.K.alpha", "K"="K.K.alpha", "Ca"="Ca.K.alpha", "Sc"="Sc.K.alpha", "Ti"="Ti.K.alpha", "V"="V.K.alpha", "Cr"="Cr.K.alpha", "Mn"="Mn.K.alpha", "Fe"="Fe.K.alpha", "Co"="Co.K.alpha", "Ni"="Ni.K.alpha", "Cu"="Cu.K.alpha", "Zn"="Zn.K.alpha", "Ga"="Ga.K.alpha", "Ge"="Ge.K.alpha", "As"="As.K.alpha", "Se"="Se.K.alpha", "Br"="Br.K.alpha", "Kr"="Kr.K.alpha", "Rb"="Rb.K.alpha", "Sr"="Sr.K.alpha", "Y"="Y.K.alpha", "Zr"="Zr.K.alpha", "Nb"="Nb.K.alpha", "Mo"="Mo.K.alpha", "Ru"="Ru.K.alpha", "Rh"="Rh.K.alpha", "Pd"="Pd.K.alpha", "Ag"="Ag.K.alpha", "Cd"="Cd.K.alpha", "In"="In.K.alpha", "Sn"="Sn.K.alpha", "Sb"="Sb.K.alpha", "Te"="Te.K.alpha", "I"="I.K.alpha", "Xe"="Xe.K.alpha", "Cs"="Cs.K.alpha", "Ba"="Ba.K.alpha", "La"="La.K.alpha", "Ce"="Ce.K.alpha", "Pr"="Pr.K.alpha", "Nd"="Nd.K.alpha")
+library(caret)#
+library(ggplot2)#
+library(doMC)#
+library(randomForest)#
+registerDoMC(cores=4)#
+testcal <- readRDS("~/Desktop/USDEarthCalTrain.quant")#
+#
+# prepare simple test suite#
+control <- trainControl(method="cv", number=5)#
+seed <- 7#
+metric <- "RMSE"#
+#
+# Linear regression#
+#
+cal.table <- data.frame(testcal[["Intensities"]], Concentration=testcal[["Values"]]$Fe.K.alpha)#
+set.seed(seed)#
+fit.lm <- train(Concentration~., data=cal.table, method="lm", metric=metric, preProc=c("center", "scale"), trControl=control)#
+importance <- varImp(fit.lm, scale=FALSE)#
+importance.frame <- as.data.frame(importance$importance)#
+#
+pull_test <- function(a.vector, a.value.position){#
+    scaled <- scale(a.vector)[,1]#
+    value <- scaled[a.value.position]#
+    scale.vector <- scaled[-a.value.position]#
+    ZScore <- (value-mean(scale.vector))/sd(scale.vector)#
+    pvalue <- pnorm(-abs(ZScore))#
+    is.sig <- pvalue < 0.05#
+    data.frame(Value=a.vector[a.value.position], ZScore=ZScore, pvalue=pvalue, Sig=is.sig)#
+}#
+Z_frame <- function(a.vector){#
+    do.call("rbind", lapply(seq(1, length(a.vector), 1), function(x) pull_test(a.vector, x)))#
+}#
+Z_choose <- function(a.vector){#
+    full <- Z_frame(a.vector)#
+    full[full$Sig,]#
+}#
+#
+variable_select <- function(intensities, values, analyte){#
+    control <- trainControl(method="cv", number=5)#
+    seed <- 7#
+    metric <- "RMSE"#
+    set.seed(seed)#
+    cal.table <- data.frame(intensities, Concentration=values[,analyte])#
+    fit.lm <- train(Concentration~., data=cal.table, method="lm", metric=metric, preProc=c("center", "scale"), trControl=control)#
+    importance <- varImp(fit.lm, scale=FALSE)#
+    importance.frame <- as.data.frame(importance$importance)#
+    elements <- rownames(importance$importance)#
+    elements[as.numeric(rownames(Z_choose(importance.frame$Overall)))]#
+}#
+variable_select_short <- function(importance){#
+    importance.frame <- as.data.frame(importance$importance)#
+    elements <- rownames(importance$importance)#
+    elements[as.numeric(rownames(Z_choose(importance.frame$Overall)))]#
+}#
+#
+simple.cal.table <- cal.table[,c("Concentration", "Fe.K.alpha", variable_select(intensities=testcal[["Intensities"]], values=testcal[["Values"]], analyte="Fe.K.alpha"))]#
+#
+best.model <- lm(Concentration~Fe.K.alpha + ., data=simple.cal.table)#
+forest.model <- randomForest(Concentration~Fe.K.alpha+., data=simple.cal.table, ntree=1000, replace=TRUE)#
+#
+best.predict <- predict(best.model, new.data=simple.cal.table)#
+forest.predict <- predict(forest.model, new.data=simple.cal.table, proximity=FALSE)#
+#
+forest.model <- randomForest(Concentration~Fe.K.alpha+., data=simple.cal.table, importance=TRUE, ntrees=500)#
+forest.predict <- predict(forest.model, new.data=simple.cal.table, proximity=FALSE)#
+plot(forest.predict~cal.table$Concentration)#
+y <- simple.cal.table[,"Concentration"]#
+1 - sum((y-forest.model$predicted)^2)/sum((y-mean(y))^2)#
+#
+importance.ggplot <- ggplot(importance.frame) + geom_density(aes(x=Overall))
+extractAIC(forest.model)
+extractAIC(forest.model, k=log(1))[2])
+extractAIC(forest.model, k=log(1))[2]
+forest.model <- randomForest(Concentration~Fe.K.alpha+., data=cal.table, ntree=1000, replace=TRUE)
+forest.model <- randomForest(Concentration~Fe.K.alpha+., data=cal.table, importance=TRUE, ntrees=500)#
+forest.predict <- predict(forest.model, new.data=simple.cal.table, proximity=FALSE)#
+plot(forest.predict~cal.table$Concentration)
+y <- simple.cal.table[,"Concentration"]#
+1 - sum((y-forest.model$predicted)^2)/sum((y-mean(y))^2)
+summary(best.model)$r.squared
+?randomForest
+summary(lm(forest.predict~cal.table$Concentration))
+?predit
+?predict
+summary(lm(forest.predict~cal.table$Concentration))
+ls(summary(lm(forest.predict~cal.table$Concentration)))
+test.vec <- c(1, 54, 0 , 6)
+which.min(test.vec)
+which.max(test.vec)
+test <- readRDS("~/Desktop/myCalibration (13).quant")
+str(test)
+othertest <- readRDS("~/Desktop/USDEarthCalTrain.quant")
+str(othertest)
+library(mcmcPack)
+?mcmcregress
+??mcmcregress
+library(MCMCpack)
+?MCMCregress
+mcmc.model <- MCMCregress(Concentration~Fe.K.alpha + ., data=simple.cal.table)
+summary(mcmc.model)
+mcmc.predict <- predict(mcmc.model, new.data=simple.cal.table, proximity=FALSE)
+install.packages("rstanarm")
+install.packages("rstan")
+ls(mcmc.model)
+mcmc.model
+is.list(mcmc.model)
+coefs <- apply(mcmc.model,2,median)[1:6]
+coefs
+ls(best.model)
+best.model$coefficients
+coefs <- apply(mcmc.model,2,median)[1:6]
+coefs
+coefs <- apply(mcmc.model,2,mean)[1:6]
+coefs
+ls(coefs)
+length(coefs)
+coefs$Fe.K.alpha
+head(simple.cal.table)
+coefs <- apply(mcmc.model,2,median)[1:length(simple.cal.table)-2]
+length(simple.cal.table)-2
+coefs <- apply(mcmc.model,2,median)[1:length(simple.cal.table)-1]
+coefs
+coefs <- apply(mcmc.model,2,median)[1:length(simple.cal.table)]
+coefs
+best.mcmc.mod <- best.model
+best.mcmc.mod$coefficients <- coefs
+mcmc.predict <- predict(best.mcmc.mod, new.data=simple.cal.table, proximity=FALSE)
+plot(best.predict~mcmc.predict)
+summary(lm(best.predict~mcmc.predict))
+mcmc.model <- MCMCregress(Concentration~Fe.K.alpha + ., data=simple.cal.table, marginal.likelihood="Laplace")#
+#
+coefs <- apply(mcmc.model,2,median)[1:length(simple.cal.table)]#
+best.mcmc.mod <- best.model#
+best.mcmc.mod$coefficients <- coefs
+coefs
+mcmc.model <- MCMCregress(Concentration~Fe.K.alpha + ., data=simple.cal.table)#
+#
+coefs <- apply(mcmc.model,2,median)[1:length(simple.cal.table)]
+coefs
+library(doMC)
+library(caret)#
+library(ggplot2)#
+#library(doMC)#
+library(randomForest)#
+#registerDoMC(cores=4)#
+library(MCMCpack)#
+testcal <- readRDS("~/Desktop/USDEarthCalTrain.quant")#
+#
+# prepare simple test suite#
+control <- trainControl(method="cv", number=5)#
+seed <- 7#
+metric <- "RMSE"#
+#
+# Linear regression#
+#
+cal.table <- data.frame(testcal[["Intensities"]], Concentration=testcal[["Values"]]$Fe.K.alpha)#
+set.seed(seed)#
+fit.lm <- train(Concentration~., data=cal.table, method="lm", metric=metric, preProc=c("center", "scale"), trControl=control)#
+importance <- varImp(fit.lm, scale=FALSE)#
+importance.frame <- as.data.frame(importance$importance)#
+#
+pull_test <- function(a.vector, a.value.position){#
+    scaled <- scale(a.vector)[,1]#
+    value <- scaled[a.value.position]#
+    scale.vector <- scaled[-a.value.position]#
+    ZScore <- (value-mean(scale.vector))/sd(scale.vector)#
+    pvalue <- pnorm(-abs(ZScore))#
+    is.sig <- pvalue < 0.05#
+    data.frame(Value=a.vector[a.value.position], ZScore=ZScore, pvalue=pvalue, Sig=is.sig)#
+}#
+Z_frame <- function(a.vector){#
+    do.call("rbind", lapply(seq(1, length(a.vector), 1), function(x) pull_test(a.vector, x)))#
+}#
+Z_choose <- function(a.vector){#
+    full <- Z_frame(a.vector)#
+    full[full$Sig,]#
+}#
+#
+variable_select <- function(intensities, values, analyte){#
+    control <- trainControl(method="cv", number=5)#
+    seed <- 7#
+    metric <- "RMSE"#
+    set.seed(seed)#
+    cal.table <- data.frame(intensities, Concentration=values[,analyte])#
+    fit.lm <- train(Concentration~., data=cal.table, method="lm", metric=metric, preProc=c("center", "scale"), trControl=control)#
+    importance <- varImp(fit.lm, scale=FALSE)#
+    importance.frame <- as.data.frame(importance$importance)#
+    elements <- rownames(importance$importance)#
+    elements[as.numeric(rownames(Z_choose(importance.frame$Overall)))]#
+}#
+variable_select_short <- function(importance){#
+    importance.frame <- as.data.frame(importance$importance)#
+    elements <- rownames(importance$importance)#
+    elements[as.numeric(rownames(Z_choose(importance.frame$Overall)))]#
+}#
+#
+simple.cal.table <- cal.table[,c("Concentration", "Fe.K.alpha", variable_select(intensities=testcal[["Intensities"]], values=testcal[["Values"]], analyte="Fe.K.alpha"))]#
+#
+best.model <- lm(Concentration~Fe.K.alpha + ., data=simple.cal.table)#
+forest.model <- randomForest(Concentration~Fe.K.alpha+., data=simple.cal.table, ntree=1000, replace=TRUE)#
+mcmc.model <- MCMCregress(Concentration~Fe.K.alpha + ., data=simple.cal.table)#
+#
+coefs <- apply(mcmc.model,2,median)[1:length(simple.cal.table)]#
+best.mcmc.mod <- best.model#
+best.mcmc.mod$coefficients <- coefs#
+#
+best.predict <- predict(best.model, new.data=simple.cal.table)#
+forest.predict <- predict(forest.model, new.data=simple.cal.table, proximity=FALSE)#
+mcmc.predict <- predict(best.mcmc.mod, new.data=simple.cal.table, proximity=FALSE)#
+#
+forest.model <- randomForest(Concentration~Fe.K.alpha+., data=cal.table, importance=TRUE, ntrees=500)#
+forest.predict <- predict(forest.model, new.data=simple.cal.table, proximity=FALSE)#
+plot(forest.predict~cal.table$Concentration)#
+y <- simple.cal.table[,"Concentration"]#
+1 - sum((y-forest.model$predicted)^2)/sum((y-mean(y))^2)#
+#
+importance.ggplot <- ggplot(importance.frame) + geom_density(aes(x=Overall))
+shiny::runApp("~/GitHub/CloudCal-Training")
+test <- readRDS("~/Desktop/USDEarthCalTrainBetter.quant")
+str(test)
+head(test[["Values"]])
+head(test[["Intensities"]])
+test <- readRDS("~/Desktop/USDEarthCalTrainBetter.quant")
+shiny::runApp("~/GitHub/CloudCal-Training")
+calibration <- readRDS("~/Desktop/USDEarthCalTrainBetter.quant")
+head(calibration[["Values"]])
+calibration <- readRDS("~/Desktop/USDEarthCalTrainBetter.quant")
+shiny::runApp("~/GitHub/CloudCal-Training")
+length(calibration$Intensities)
+length(calibration$Intensities)
+shiny::runApp("~/GitHub/CloudCal-Training")
