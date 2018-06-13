@@ -19,12 +19,18 @@ shinyUI(navbarPage("CloudCal", id="nav", theme = shinytheme("flatly"),
 
 
 
+
 tabPanel("Cal Curves",
 div(class="outer",
 
 fluidRow(
 sidebarLayout(
 sidebarPanel(width=3,
+
+tags$style(type="text/css",
+".shiny-output-error { visibility: hidden; }",
+".shiny-output-error:before { visibility: hidden; }"
+),
 
 downloadButton('downloadcloudplot', "Plot"),
 actionButton('createcalelement', "Update"),
