@@ -711,6 +711,8 @@ observeEvent(input$calcurveelement, {
     isolate(slopehold$slopes <- inVar4Selectedpre())
 
 })
+
+
 observeEvent(input$trainslopes, {
     
     isolate(slopehold$slopes <- bestSlopeVars())
@@ -738,6 +740,7 @@ output$inVar4 <- renderUI({
 #####Machine Learning: Cal Type
 
 
+
 calTypeSelectionPre <- reactive({
     
     hold <- values[["DF"]]
@@ -758,22 +761,62 @@ calTypeSelectionPre <- reactive({
 
 bestCalType <- reactive({
     
-    predict.frame <- predictFrame()
+    concentration.table <- concentrationTable()
+    data <- dataNorm()
+    spectra.line.table <- spectraLineTable()
+    
+    
+    #concentration.table <- concentration.table[complete.cases(concentration.table[, input$calcurveelement]),]
+
+    #spectra.line.table <- spectra.line.table[complete.cases(concentration.table[, input$calcurveelement]),]
+    #data <- data[data$Spectrum %in% concentration.table$Spectrum, ]
+    
+    predict.intensity <- if(input$normcal==1){
+        if(dataType()=="Spectra"){
+            lucas.simp.prep(spectra.line.table=spectra.line.table, element.line=input$calcurveelement, slope.element.lines=elementallinestouse(), intercept.element.lines=input$intercept_vars)
+        } else if(dataType()=="Net"){
+            lucas.simp.prep.net(spectra.line.table=spectra.line.table, element.line=input$calcurveelement, slope.element.lines=elementallinestouse(), intercept.element.lines=input$intercept_vars)
+        }
+    } else if(input$normcal==2){
+        predict.intensity <- if(dataType()=="Spectra"){
+            lucas.tc.prep(data=data, spectra.line.table=spectra.line.table, element.line=input$calcurveelement, slope.element.lines=elementallinestouse(), intercept.element.lines=input$intercept_vars)
+        } else if(dataType()=="Net"){
+            lucas.tc.prep.net(data=data, spectra.line.table=spectra.line.table, element.line=input$calcurveelement, slope.element.lines=elementallinestouse(), intercept.element.lines=input$intercept_vars)
+        }
+    } else if(input$normcal==3){
+        predict.intensity <- if(dataType()=="Spectra"){
+            lucas.comp.prep(data=data, spectra.line.table=spectra.line.table, element.line=input$calcurveelement, slope.element.lines=elementallinestouse(), intercept.element.lines=input$intercept_vars, norm.min=input$comptonmin, norm.max=input$comptonmax)
+        } else if(dataType()=="Net"){
+            lucas.comp.prep.net(data=data, spectra.line.table=spectra.line.table, element.line=input$calcurveelement, slope.element.lines=elementallinestouse(), intercept.element.lines=input$intercept_vars, norm.min=input$comptonmin, norm.max=input$comptonmax)
+        }
+    }
+    
+    
+    
+    predict.frame <- data.frame(predict.intensity, concentration.table[,input$calcurveelement])
+    predict.frame <- predict.frame[complete.cases(predict.frame),]
+    colnames(predict.frame) <- c(names(predict.intensity), "Concentration")
     predict.frame <- predict.frame[complete.cases(predict.frame$Concentration),]
+
     
-    cal.lm.simp <- lm(Concentration~Intensity, data=predict.frame, na.action=na.exclude)
+    predict.frame.simp <- predict.frame[,c("Concentration", "Intensity")]
+    predict.frame.luc <- predict.frame[, c("Concentration", "Intensity", input$slope_vars)]
+    predict.frame.forest <- predict.frame
     
-    cal.lm.two <- lm(Concentration~Intensity + I(Intensity^2), data=predict.frame, na.action=na.exclude)
     
-    cal.lm.luc <- lm(Concentration~., data=predict.frame, na.action=na.exclude)
+    cal.lm.simp <- lm(Concentration~Intensity, data=predict.frame.simp, na.action=na.exclude)
     
-    cal.lm.forest <- randomForest(Concentration~., data=predict.frame, na.action=na.omit)
+    cal.lm.two <- lm(Concentration~Intensity + I(Intensity^2), data=predict.frame.simp, na.action=na.exclude)
     
-    forest.predict <- predict(cal.lm.forest, new.data=predict.frame, proximity=FALSE)
+    cal.lm.luc <- lm(Concentration~., data=predict.frame.luc, na.action=na.exclude)
+    
+    cal.lm.forest <- randomForest(Concentration~., data=predict.frame.forest, na.action=na.omit)
+    
+    forest.predict <- predict(cal.lm.forest, new.data=predict.frame.forest, proximity=FALSE)
     forest.sum <- lm(predict.frame$Concentration~forest.predict, na.action=na.exclude)
     
     
-    r2.vector <- c(summary(cal.lm.simp)$adj.r.squared, summary(cal.lm.two)$adj.r.squared-.1, summary(cal.lm.luc)$adj.r.squared, summary(forest.sum)$adj.r.squared)
+    r2.vector <- c(summary(cal.lm.simp)$adj.r.squared, summary(cal.lm.two)$adj.r.squared-.5, summary(cal.lm.luc)$adj.r.squared, summary(forest.sum)$adj.r.squared)
     which.max(r2.vector)
     
     
@@ -782,14 +825,12 @@ bestCalType <- reactive({
 
 calhold <- reactiveValues()
 
-observeEvent(!is.null(calibration), {
     calhold$caltype <- calTypeSelectionPre()
-})
 
 
 observeEvent(input$trainslopes, {
     
-    isolate(calhold$caltype <- bestCalType())
+     isolate(calhold$caltype <- bestCalType())
     
 })
 
@@ -821,17 +862,17 @@ calList <- NULL
 
 observeEvent(!is.null(calibration), {
     
-    cal.condition <- 3
-    norm.condition <- 1
+    cal.condition <- calhold$caltype
+    norm.condition <- normhold$normtype
     
-    norm.min <- 18.5
-    norm.max <- 19.5
+    norm.min <- normhold$norms[1]
+    norm.max <- normhold$norms[2]
     
     cal.table <- data.frame(cal.condition, norm.condition, norm.min, norm.max)
     colnames(cal.table) <- c("CalType", "NormType", "Min", "Max")
     
-    slope.corrections <- input$slope_vars
-    intercept.corrections <- input$intercept_vars
+    slope.corrections <- slopehold$slopes
+    intercept.corrections <- intercepthold$intercepts
     
     standards.used <- vals$keeprows
     
