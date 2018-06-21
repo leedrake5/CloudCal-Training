@@ -607,12 +607,40 @@ slopeImportance <- reactive({
     
 })
 
-output$importanceplot <- renderPlot({
+
+rainForestImportance <- reactive({
     
-    plot(slopeImportance())
+    
+    as.data.frame(importance(elementModel()))
     
 })
 
+rainForestImportancePlot <- reactive({
+    
+    
+    importance.frame <- rainForestImportance()
+    colnames(importance.frame) <- c("NodePurity")
+    importance.frame$Energy <- as.numeric(gsub("X", "", rownames(importance.frame)))
+    
+    ggplot(importance.frame) +
+    geom_line(aes(Energy, NodePurity)) +
+    theme_light() +
+    scale_x_continuous("Energy (keV)")
+    
+    
+})
+
+
+
+output$importanceplot <- renderPlot({
+    
+    if(calType()!=5){
+        plot(slopeImportance())
+    } else if(calType()==5){
+        rainForestImportancePlot()
+    }
+    
+})
 
 
 fishVector <- reactive({
@@ -845,7 +873,7 @@ calTypeSelection <- reactive({
 output$calTypeInput <- renderUI({
     
     selectInput("radiocal", label = "Calibration Curve",
-    choices = list("Linear" = 1, "Non-Linear" = 2, "Lucas-Tooth" = 3, "Forest" = 4),
+    choices = list("Linear" = 1, "Non-Linear" = 2, "Lucas-Tooth" = 3, "Forest" = 4, "Rainforest"=5),
     selected = calTypeSelection())
     
     
@@ -1177,6 +1205,29 @@ dataType <- reactive({
       }
       
       
+      if (input$radiocal==5){
+          if(input$normcal==1){
+              predict.intensity <- if(dataType()=="Spectra"){
+                  spectra.simp.prep(spectra=data)[,-1]
+              } else if(dataType()=="Net"){
+                  NULL
+              }
+          } else if(input$normcal==2){
+              predict.intensity <- if(dataType()=="Spectra"){
+                  spectra.tc.prep(spectra=data)[,-1]
+              } else if(dataType()=="Net"){
+                  NULL
+              }
+          } else if(input$normcal==3){
+              predict.intensity <- if(dataType()=="Spectra"){
+                  spectra.comp.prep(spectra=data, norm.min=input$comptonmin, norm.max=input$comptonmax)[,-1]
+              } else if(dataType()=="Net"){
+                  NULL
+              }
+          }
+      }
+      
+      
       predict.intensity
       
       
@@ -1240,6 +1291,10 @@ dataType <- reactive({
       }
       
       if (input$radiocal==4){
+          cal.lm <- randomForest(Concentration~., data=predict.frame[ vals$keeprows, , drop = FALSE], na.action=na.omit)
+      }
+      
+      if (input$radiocal==5){
           cal.lm <- randomForest(Concentration~., data=predict.frame[ vals$keeprows, , drop = FALSE], na.action=na.omit)
       }
       
@@ -1324,6 +1379,32 @@ dataType <- reactive({
       }
       
       
+      if (input$radiocal==5){
+          
+          xmin = 0; xmax=10
+          N = length(predict.frame$Concentration)
+          means = colMeans(predict.frame)
+          dummyDF = t(as.data.frame(means))
+          for(i in 2:N){dummyDF=rbind(dummyDF,means)}
+          xv=seq(xmin,xmax, length.out=N)
+          dummyDF$Concentration = xv
+          yv=predict(element.model, newdata=predict.intensity)
+          
+          
+          lucas.x <- yv
+          
+          cal.est.conc.pred.luc <- predict(object=element.model , newdata=predict.intensity, interval='confidence')
+          #cal.est.conc.tab <- data.frame(cal.est.conc.pred.luc)
+          #cal.est.conc.luc <- cal.est.conc.tab$fit
+          #cal.est.conc.luc.up <- cal.est.conc.tab$upr
+          #cal.est.conc.luc.low <- cal.est.conc.tab$lwr
+          
+          
+          val.frame <- data.frame(predict.frame$Concentration, lucas.x, as.vector(cal.est.conc.pred.luc))
+          colnames(val.frame) <- c("Concentration",  "IntensityNorm", "Prediction")
+      }
+      
+      
       
       
       val.frame
@@ -1339,7 +1420,6 @@ dataType <- reactive({
   
   calType <- reactive({
       
-      
       if(input$radiocal==1){
           1
       } else if(input$radiocal==2){
@@ -1348,12 +1428,14 @@ dataType <- reactive({
           3
       } else if(input$radiocal==4){
           3
+      } else if(input$radiocal==5){
+          5
       }
       
   })
   
   rangescalcurve <- reactiveValues(x = NULL, y = NULL)
-
+  
   
   
   calCurvePlot <- reactive({
@@ -1370,7 +1452,7 @@ dataType <- reactive({
       conen <- " (%)"
       predi <- " Estimate (%)"
       log <- "Log "
-
+      
       
       intensity.name <- c(element.name, intens)
       concentration.name <- c(element.name, conen)
@@ -1387,7 +1469,7 @@ dataType <- reactive({
           scale_x_continuous(paste(element.name, intens)) +
           scale_y_continuous(paste(element.name, conen)) +
           coord_cartesian(xlim = rangescalcurve$x, ylim = rangescalcurve$y, expand = TRUE)
-
+          
       }
       
       if(input$radiocal==2){
@@ -1400,7 +1482,7 @@ dataType <- reactive({
           scale_x_continuous(paste(element.name, intens)) +
           scale_y_continuous(paste(element.name, conen)) +
           coord_cartesian(xlim = rangescalcurve$x, ylim = rangescalcurve$y, expand = TRUE)
-
+          
       }
       
       if(input$radiocal==3){
@@ -1413,10 +1495,23 @@ dataType <- reactive({
           scale_x_continuous(paste(element.name, norma)) +
           scale_y_continuous(paste(element.name, conen)) +
           coord_cartesian(xlim = rangescalcurve$x, ylim = rangescalcurve$y, expand = TRUE)
-
+          
       }
       
       if(input$radiocal==4){
+          calcurve.plot <- ggplot(data=val.frame[ vals$keeprows, , drop = FALSE], aes(IntensityNorm, Concentration)) +
+          theme_light() +
+          annotate("text", label=lm_eqn(lm(Concentration~., val.frame[ vals$keeprows, , drop = FALSE])), x=0, y=Inf, hjust=0, vjust=1, parse=TRUE)+
+          geom_point() +
+          geom_point(aes(IntensityNorm, Concentration), data = val.frame[!vals$keeprows, , drop = FALSE], shape = 21, fill = "red", color = "black", alpha = 0.25) +
+          geom_smooth() +
+          scale_x_continuous(paste(element.name, norma)) +
+          scale_y_continuous(paste(element.name, conen)) +
+          coord_cartesian(xlim = rangescalcurve$x, ylim = rangescalcurve$y, expand = TRUE)
+          
+      }
+      
+      if(input$radiocal==5){
           calcurve.plot <- ggplot(data=val.frame[ vals$keeprows, , drop = FALSE], aes(IntensityNorm, Concentration)) +
           theme_light() +
           annotate("text", label=lm_eqn(lm(Concentration~., val.frame[ vals$keeprows, , drop = FALSE])), x=0, y=Inf, hjust=0, vjust=1, parse=TRUE)+
@@ -1441,7 +1536,7 @@ dataType <- reactive({
       if (!is.null(brush)) {
           rangescalcurve$x <- c(brush$xmin, brush$xmax)
           rangescalcurve$y <- c(brush$ymin, brush$ymax)
-
+          
       } else {
           rangescalcurve$x <- NULL
           rangescalcurve$y <- NULL
@@ -1454,7 +1549,7 @@ dataType <- reactive({
   
   
   rangesvalcurve <- reactiveValues(x = NULL, y = NULL)
-
+  
   
   valCurvePlot <- reactive({
       
@@ -1478,20 +1573,20 @@ dataType <- reactive({
       val.frame <- valFrame()
       
       
-          valcurve.plot <- ggplot(data=val.frame[ vals$keeprows, , drop = FALSE], aes(Prediction, Concentration)) +
-          theme_bw() +
-          annotate("text", label=lm_eqn_val(lm(Concentration~Prediction, val.frame[ vals$keeprows, , drop = FALSE])), x=0, y=Inf, hjust=0, vjust=1, parse=TRUE)+
-          geom_abline(intercept=0, slope=1, lty=2) +
-          stat_smooth(method="lm") +
-          geom_point() +
-          geom_point(aes(Prediction, Concentration),  data = val.frame[!vals$keeprows, , drop = FALSE], shape = 21, fill = "red", color = "black", alpha = 0.25) +
-          scale_x_continuous(paste(element.name, predi)) +
-          scale_y_continuous(paste(element.name, conen)) +
-          coord_cartesian(xlim = rangesvalcurve$x, ylim = rangesvalcurve$y, expand = TRUE)
-
+      valcurve.plot <- ggplot(data=val.frame[ vals$keeprows, , drop = FALSE], aes(Prediction, Concentration)) +
+      theme_bw() +
+      annotate("text", label=lm_eqn_val(lm(Concentration~Prediction, val.frame[ vals$keeprows, , drop = FALSE])), x=0, y=Inf, hjust=0, vjust=1, parse=TRUE)+
+      geom_abline(intercept=0, slope=1, lty=2) +
+      stat_smooth(method="lm") +
+      geom_point() +
+      geom_point(aes(Prediction, Concentration),  data = val.frame[!vals$keeprows, , drop = FALSE], shape = 21, fill = "red", color = "black", alpha = 0.25) +
+      scale_x_continuous(paste(element.name, predi)) +
+      scale_y_continuous(paste(element.name, conen)) +
+      coord_cartesian(xlim = rangesvalcurve$x, ylim = rangesvalcurve$y, expand = TRUE)
       
       
-
+      
+      
       
       valcurve.plot
       
@@ -1531,22 +1626,21 @@ dataType <- reactive({
   )
   
   
-
-calValTable <- reactive({
-    
-    standard.table <- valFrame()
-    hold.frame <- holdFrame()
-    
-    standard.table.summary <- data.frame(hold.frame$Spectrum, standard.table$Concentration, standard.table$Prediction, standard.table$Concentration-standard.table$Prediction, ((standard.table$Concentration-standard.table$Prediction)/standard.table$Concentration))
-    colnames(standard.table.summary) <- c("Standard", "Concentration", "Prediction", "Difference", "Relative")
-    
-    standard.table.summary[,-1] <-round(standard.table.summary[,-1],4)
-    standard.table.summary[,5] <- as.character(percent(standard.table.summary[,5]))
-    
-    this.table <- standard.table.summary
-    this.table
-    
-})
+  calValTable <- reactive({
+      
+      standard.table <- valFrame()
+      hold.frame <- holdFrame()
+      
+      standard.table.summary <- data.frame(hold.frame$Spectrum, standard.table$Concentration, standard.table$Prediction, standard.table$Concentration-standard.table$Prediction, ((standard.table$Concentration-standard.table$Prediction)/standard.table$Concentration))
+      colnames(standard.table.summary) <- c("Standard", "Concentration", "Prediction", "Difference", "Relative")
+      
+      standard.table.summary[,-1] <-round(standard.table.summary[,-1],4)
+      standard.table.summary[,5] <- as.character(percent(standard.table.summary[,5]))
+      
+      this.table <- standard.table.summary
+      this.table
+      
+  })
   
   
   output$standardsperformance <- DT::renderDataTable({
@@ -1601,6 +1695,10 @@ calValTable <- reactive({
       }
       
       if (input$radiocal==4){
+          cal.lm <- randomForest(Concentration~., data=predict.frame, na.action=na.omit)
+      }
+      
+      if (input$radiocal==5){
           cal.lm <- randomForest(Concentration~., data=predict.frame, na.action=na.omit)
       }
       
@@ -1688,6 +1786,31 @@ calValTable <- reactive({
           colnames(val.frame) <- c("Concentration", "Intensity", "IntensityNorm", "Prediction")
       }
       
+      if (input$radiocal==5){
+          
+          xmin = 0; xmax=10
+          N = length(predict.frame$Concentration)
+          means = colMeans(predict.frame)
+          dummyDF = t(as.data.frame(means))
+          for(i in 2:N){dummyDF=rbind(dummyDF,means)}
+          xv=seq(xmin,xmax, length.out=N)
+          dummyDF$Concentration = xv
+          yv=predict(element.model, newdata=predict.intensity)
+          
+          
+          lucas.x <- yv
+          
+          cal.est.conc.pred.luc <- predict(object=element.model , newdata=predict.intensity, interval='confidence')
+          #cal.est.conc.tab <- data.frame(cal.est.conc.pred.luc)
+          #cal.est.conc.luc <- cal.est.conc.tab$fit
+          #cal.est.conc.luc.up <- cal.est.conc.tab$upr
+          #cal.est.conc.luc.low <- cal.est.conc.tab$lwr
+          
+          
+          val.frame <- data.frame(predict.frame$Concentration, lucas.x, as.vector(cal.est.conc.pred.luc))
+          colnames(val.frame) <- c("Concentration", "IntensityNorm", "Prediction")
+      }
+      
       
       
       
@@ -1765,11 +1888,33 @@ calValTable <- reactive({
           lucas.x <- yv
           
           cal.est.conc.pred.luc <- predict(object=element.model , newdata=predict.intensity, interval='confidence')
-
+          
           
           
           val.frame <- data.frame(predict.frame$Concentration, predict.intensity$Intensity, lucas.x, as.vector(cal.est.conc.pred.luc))
           colnames(val.frame) <- c("Concentration", "Intensity", "IntensityNorm", "Prediction")
+      }
+      
+      if (input$radiocal==5){
+          
+          xmin = 0; xmax=10
+          N = length(predict.frame$Concentration)
+          means = colMeans(predict.frame)
+          dummyDF = t(as.data.frame(means))
+          for(i in 2:N){dummyDF=rbind(dummyDF,means)}
+          xv=seq(xmin,xmax, length.out=N)
+          dummyDF$Concentration = xv
+          yv=predict(element.model, newdata=predict.intensity)
+          
+          
+          lucas.x <- yv
+          
+          cal.est.conc.pred.luc <- predict(object=element.model , newdata=predict.intensity, interval='confidence')
+          
+          
+          
+          val.frame <- data.frame(predict.frame$Concentration, lucas.x, as.vector(cal.est.conc.pred.luc))
+          colnames(val.frame) <- c("Concentration", "IntensityNorm", "Prediction")
       }
       
       
@@ -1780,7 +1925,7 @@ calValTable <- reactive({
   })
   
   rangescalcurverandom <- reactiveValues(x = NULL, y = NULL)
-
+  
   
   calCurvePlotRandom <- reactive({
       
@@ -1811,7 +1956,7 @@ calValTable <- reactive({
           scale_x_continuous(paste(element.name, intens)) +
           scale_y_continuous(paste(element.name, conen)) +
           coord_cartesian(xlim = rangescalcurverandom$x, ylim = rangescalcurverandom$y, expand = TRUE)
-
+          
       }
       
       if(input$radiocal==2){
@@ -1829,7 +1974,7 @@ calValTable <- reactive({
       
       if(input$radiocal==3){
           val.frame <- valFrameRandomizedRev()
-
+          
           calcurve.plot <- ggplot(data=val.frame, aes(IntensityNorm, Concentration)) +
           theme_light() +
           annotate("text", label=lm_eqn(element.model), x=0, y=Inf, hjust=0, vjust=1, parse=TRUE)+
@@ -1842,6 +1987,20 @@ calValTable <- reactive({
       }
       
       if(input$radiocal==4){
+          val.frame <- valFrameRandomizedRev()
+          
+          calcurve.plot <- ggplot(data=val.frame, aes(IntensityNorm, Concentration)) +
+          theme_light() +
+          annotate("text", label=lm_eqn(lm(Concentration~., val.frame)), x=0, y=Inf, hjust=0, vjust=1, parse=TRUE)+
+          geom_point() +
+          geom_point(aes(IntensityNorm, Concentration), data = val.frame, shape = 21, fill = "red", color = "black", alpha = 0.25) +
+          geom_smooth() +
+          scale_x_continuous(paste(element.name, norma)) +
+          scale_y_continuous(paste(element.name, conen)) +
+          coord_cartesian(xlim = rangescalcurverandom$x, ylim = rangescalcurverandom$y, expand = TRUE)
+      }
+      
+      if(input$radiocal==5){
           val.frame <- valFrameRandomizedRev()
           
           calcurve.plot <- ggplot(data=val.frame, aes(IntensityNorm, Concentration)) +
@@ -1880,7 +2039,7 @@ calValTable <- reactive({
   
   
   rangesvalcurverandom <- reactiveValues(x = NULL, y = NULL)
-
+  
   valCurvePlotRandom <- reactive({
       
       
@@ -1898,7 +2057,7 @@ calValTable <- reactive({
       prediction.name <- c(element.name, predi)
       
       val.frame <- valFrameRandomized()
-
+      
       valcurve.plot <- ggplot(data=val.frame, aes(Prediction, Concentration)) +
       theme_bw() +
       annotate("text", label=lm_eqn_val(lm(Concentration~Prediction, val.frame)), x=0, y=Inf, hjust=0, vjust=1, parse=TRUE)+
@@ -1936,9 +2095,13 @@ calValTable <- reactive({
   # Float over info
   output$hover_infocal <- renderUI({
       
-      point.table <- if(calType()!=3){
+      point.table <- if(calType()==3){
+          calCurveFrame()
+      } else if(calType()==2){
           calCurveFrame()
       } else if(calType()==3) {
+          calValFrame()
+      } else if(calType()==5) {
           calValFrame()
       }
       
@@ -1986,10 +2149,14 @@ calValTable <- reactive({
   # Float over info
   output$hover_infocal_random <- renderUI({
       
-      point.table <- if(calType()!=3){
+      point.table <- if(calType()==3){
+          calCurveFrame()
+      } else if(calType()==2){
           calCurveFrame()
       } else if(calType()==3) {
-          valFrame()
+          calValFrame()
+      } else if(calType()==5) {
+          calValFrame()
       }
       
       randomized <- randomizeData()
@@ -1997,7 +2164,7 @@ calValTable <- reactive({
       
       point.table <- point.table[ vals$keeprows, , drop = FALSE]
       point.table <- point.table[randomized,]
-
+      
       
       concentration.table <- concentrationTable()
       
@@ -2006,7 +2173,7 @@ calValTable <- reactive({
       
       hold.table <- concentration.table[,c("Spectrum", input$calcurveelement)]
       colnames(hold.table) <- c("Spectrum", "Selection")
-
+      
       
       point.table$Spectrum <- hold.table["Spectrum"]
       
@@ -2046,9 +2213,13 @@ calValTable <- reactive({
   # Toggle points that are clicked
   observeEvent(input$plot_cal_click, {
       
-      predict.frame <- if(calType()!=3){
+      predict.frame <- if(calType()==3){
+          calCurveFrame()
+      } else if(calType()==2){
           calCurveFrame()
       } else if(calType()==3) {
+          calValFrame()
+      } else if(calType()==5) {
           calValFrame()
       }
       
@@ -2061,9 +2232,13 @@ calValTable <- reactive({
   # Toggle points that are brushed, when button is clicked
   observeEvent(input$exclude_toggle, {
       
-      predict.frame <- if(calType()!=3){
+      predict.frame <- if(calType()==3){
+          calCurveFrame()
+      } else if(calType()==2){
           calCurveFrame()
       } else if(calType()==3) {
+          calValFrame()
+      } else if(calType()==5) {
           calValFrame()
       }
       res <- brushedPoints(predict.frame, input$plot_cal_brush, allRows = TRUE)
@@ -2074,9 +2249,13 @@ calValTable <- reactive({
   # Reset all points
   observeEvent(input$exclude_reset, {
       
-      predict.frame <- if(calType()!=3){
+      predict.frame <- if(calType()==3){
+          calCurveFrame()
+      } else if(calType()==2){
           calCurveFrame()
       } else if(calType()==3) {
+          calValFrame()
+      } else if(calType()==5) {
           calValFrame()
       }
       vals$keeprows <- rep(TRUE, nrow(predict.frame))
@@ -2166,7 +2345,7 @@ calValTable <- reactive({
       
       hold.table <- concentration.table[,c("Spectrum", input$calcurveelement)]
       colnames(hold.table) <- c("Spectrum", "Selection")
-
+      
       
       point.table$Spectrum <- hold.table["Spectrum"]
       
@@ -2282,13 +2461,18 @@ calValTable <- reactive({
   
   modelFrame <- reactive({
       
-      if(input$radiocal!=4){
+      if(input$radiocal==1){
+          normalLM()
+      } else if(input$radiocal==2){
+          normalLM()
+      } else if(input$radiocal==3){
           normalLM()
       } else if(input$radiocal==4){
           forestLM()
+      } else if(input$radiocal==5){
+          forestLM()
       }
-
-
+      
       
   })
   
@@ -2772,187 +2956,187 @@ calValTable <- reactive({
       
       vals$keeprows <- rep(TRUE, nrow(predict.frame))
   })
-
-
- 
- 
- #output$downloadcal <- downloadHandler(
- #filename = function() { paste(input$dataset, '.csv', sep=',') },
- #content = function(file
- #) {
- #  write.csv(metadataForm(), file)
- # }
- #)
-
-
-
-####alternative take
-
-nullList <- reactive({
-    
-    spectra.line.table <- spectraData()
-
-    cal.vector <- elementallinestouse()
-    cal.vector2 <- cal.vector[2:length(cal.vector)]
-    cal.list <- as.list(cal.vector2)
-    setNames(cal.list, cal.vector2)
-    cal.list <- pblapply(cal.list, function(x) return(NULL))
-    nullList <- cal.list
-
-    
-})
-
-
-
-
-#rf2 <- reactiveValues()
-#observe({
-#    if(input$createcalelement > 0){
-#    calList[[input$calcurveelement]] <- elementModel()
-#    }
-#    rf2 <<- calList
-#})
-
-emptyList <- reactive({
-    a.list <- list()
-    a.list
-})
-
-
-
-
-
-calList <- reactiveValues()
-
-observeEvent(!is.null(calibration), {
-    isolate(calList <- emptyList())
-    calList <<- calList
-})
-
-
-
-
-                 observeEvent(input$createcalelement, {
-                              
-                              cal.condition <- input$radiocal
-                              norm.condition <- input$normcal
-                              
-                              norm.min <- print(input$comptonmin)
-                              norm.max <- print(input$comptonmax)
-                              
-                              cal.table <- data.frame(cal.condition, norm.condition, norm.min, norm.max)
-                              colnames(cal.table) <- c("CalType", "NormType", "Min", "Max")
-                              
-                              slope.corrections <- input$slope_vars
-                              intercept.corrections <- input$intercept_vars
-                              
-                              standards.used <- vals$keeprows
-                              
-                              cal.mode.list <- list(cal.table, slope.corrections, intercept.corrections, standards.used)
-                              names(cal.mode.list) <- c("CalTable", "Slope", "Intercept", "StandardsUsed")
-                              
-                              calConditons <<- cal.mode.list
-                              
-                              })
-
-
-calList <- reactiveValues()
-observeEvent(input$createcalelement, {
-    
-    
-    calList[[input$calcurveelement]] <- list(isolate(calConditons), isolate(strip_glm(elementModel())))
-
-    calList <<- calList
-
-})
-
-calPlotList <- reactiveValues()
-calPlotList <- emptyList()
-observeEvent(input$createcalelement, {
-    
-    
-    calPlotList[[input$calcurveelement]] <- isolate(calPlotDownload())
-    
-    calPlotList <<- calPlotList
-    
-})
-
-diagPlotList <- reactiveValues()
-diagPlotList <- emptyList()
-#observeEvent(input$createcalelement, {
-    
-    
-    #diagPlotList[[input$calcurveelement]] <- isolate(diagPlotDownload())
-    
-    #diagPlotList <<- diagPlotList
-    
-    #})
-
-Calibration <- reactiveValues()
-observeEvent(input$createcal, {
-    
-    
-    spectra.line.table <- if(dataType()=="Spectra"){
-        spectraData()
-    } else if(dataType()=="Net"){
-        dataHold()
-    }
-             cal.intensities <- spectra.line.table[elementallinestouse()]
-             cal.values <- values[["DF"]]
-             cal.data <- if(dataType()=="Spectra"){
-                 dataHold()
-             } else if(dataType()=="Net"){
-                 myData()
-             }
-             
-             
-             dataHold()
-
-             calibrationList <- NULL
-             calibrationList <- list(filetype, input$calunits, cal.data, cal.intensities, cal.values, calList)
-             names(calibrationList) <- c("FileType", "Units", "Spectra", "Intensities", "Values", "calList")
-             
-    Calibration <<- calibrationList
-
-    
-})
-
-CalibrationPlots <- reactiveValues()
-observeEvent(input$createcal, {
-    
-    CalibrationPlots$calCurves <<- calPlotList
-    
-    
-})
-
-#observeEvent(input$createcal, {
-    
-    #CalibrationPlots$diagPlots <<- diagPlotList
-    
-    
-    #})
-
-
-
-output$downloadModel <- downloadHandler(
-filename <- function(){
-    paste(input$calname, "quant", sep=".")
-},
-
-content = function(file) {
-    saveRDS(Calibration, file = file, compress="xz")
-}
-)
-
-
-output$downloadReport <- downloadHandler(
- function() { paste(paste(c(input$calname), collapse=''), '.pdf',  sep='') },
- content = function(file){
-    ml = marrangeGrob(grobs=CalibrationPlots$calCurves, nrow=1, ncol=1)
-    ggsave(file, ml, device="pdf", dpi=300, width=12, height=7)
-
-dev.off()
-})
+  
+  
+  
+  
+  #output$downloadcal <- downloadHandler(
+  #filename = function() { paste(input$dataset, '.csv', sep=',') },
+  #content = function(file
+  #) {
+  #  write.csv(metadataForm(), file)
+  # }
+  #)
+  
+  
+  
+  ####alternative take
+  
+  nullList <- reactive({
+      
+      spectra.line.table <- spectraData()
+      
+      cal.vector <- elementallinestouse()
+      cal.vector2 <- cal.vector[2:length(cal.vector)]
+      cal.list <- as.list(cal.vector2)
+      setNames(cal.list, cal.vector2)
+      cal.list <- pblapply(cal.list, function(x) return(NULL))
+      nullList <- cal.list
+      
+      
+  })
+  
+  
+  
+  
+  #rf2 <- reactiveValues()
+  #observe({
+  #    if(input$createcalelement > 0){
+  #    calList[[input$calcurveelement]] <- elementModel()
+  #    }
+  #    rf2 <<- calList
+  #})
+  
+  emptyList <- reactive({
+      a.list <- list()
+      a.list
+  })
+  
+  
+  
+  
+  
+  calList <- reactiveValues()
+  
+  observeEvent(input$actionprocess, {
+      isolate(calList <- emptyList())
+      calList <<- calList
+  })
+  
+  
+  
+  
+  observeEvent(input$createcalelement, {
+      
+      cal.condition <- input$radiocal
+      norm.condition <- input$normcal
+      
+      norm.min <- print(input$comptonmin)
+      norm.max <- print(input$comptonmax)
+      
+      cal.table <- data.frame(cal.condition, norm.condition, norm.min, norm.max)
+      colnames(cal.table) <- c("CalType", "NormType", "Min", "Max")
+      
+      slope.corrections <- input$slope_vars
+      intercept.corrections <- input$intercept_vars
+      
+      standards.used <- vals$keeprows
+      
+      cal.mode.list <- list(cal.table, slope.corrections, intercept.corrections, standards.used)
+      names(cal.mode.list) <- c("CalTable", "Slope", "Intercept", "StandardsUsed")
+      
+      calConditons <<- cal.mode.list
+      
+  })
+  
+  
+  calList <- reactiveValues()
+  observeEvent(input$createcalelement, {
+      
+      
+      calList[[input$calcurveelement]] <- list(isolate(calConditons), isolate(strip_glm(elementModel())))
+      
+      calList <<- calList
+      
+  })
+  
+  calPlotList <- reactiveValues()
+  calPlotList <- emptyList()
+  observeEvent(input$createcalelement, {
+      
+      
+      calPlotList[[input$calcurveelement]] <- isolate(calPlotDownload())
+      
+      calPlotList <<- calPlotList
+      
+  })
+  
+  diagPlotList <- reactiveValues()
+  diagPlotList <- emptyList()
+  #observeEvent(input$createcalelement, {
+  
+  
+  #diagPlotList[[input$calcurveelement]] <- isolate(diagPlotDownload())
+  
+  #diagPlotList <<- diagPlotList
+  
+  #})
+  
+  Calibration <- reactiveValues()
+  observeEvent(input$createcal, {
+      
+      
+      spectra.line.table <- if(dataType()=="Spectra"){
+          spectraData()
+      } else if(dataType()=="Net"){
+          dataHold()
+      }
+      cal.intensities <- spectra.line.table[elementallinestouse()]
+      cal.values <- values[["DF"]]
+      cal.data <- if(dataType()=="Spectra"){
+          dataHold()
+      } else if(dataType()=="Net"){
+          myData()
+      }
+      
+      
+      dataHold()
+      
+      calibrationList <- NULL
+      calibrationList <- list(input$filetype, input$calunits, cal.data, cal.intensities, cal.values, calList)
+      names(calibrationList) <- c("FileType", "Units", "Spectra", "Intensities", "Values", "calList")
+      
+      Calibration <<- calibrationList
+      
+      
+  })
+  
+  CalibrationPlots <- reactiveValues()
+  observeEvent(input$createcal, {
+      
+      CalibrationPlots$calCurves <<- calPlotList
+      
+      
+  })
+  
+  #observeEvent(input$createcal, {
+  
+  #CalibrationPlots$diagPlots <<- diagPlotList
+  
+  
+  #})
+  
+  
+  
+  output$downloadModel <- downloadHandler(
+  filename <- function(){
+      paste(input$calname, "quant", sep=".")
+  },
+  
+  content = function(file) {
+      saveRDS(Calibration, file = file, compress="xz")
+  }
+  )
+  
+  
+  output$downloadReport <- downloadHandler(
+  function() { paste(paste(c(input$calname), collapse=''), '.pdf',  sep='') },
+  content = function(file){
+      ml = marrangeGrob(grobs=CalibrationPlots$calCurves, nrow=1, ncol=1)
+      ggsave(file, ml, device="pdf", dpi=300, width=12, height=7)
+      
+      dev.off()
+  })
 
 
 
