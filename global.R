@@ -51,6 +51,7 @@ library(XML)
 library(gRbase)
 library(reticulate)
 library(Rcpp)
+library(data.table)
 
 options(digits=4)
 options(warn=-1)
@@ -2014,11 +2015,10 @@ spectra_table <- function(spectra, concentration){
 spectra.simp.prep <- function(spectra){
     
     spectra$Energy <- round(spectra$Energy, 1)
+    spectra <- data.table(spectra)
+    spectra.aggregate <- spectra[, list(CPS=mean(CPS, na.rm = TRUE)), by = list(Spectrum,Energy)]
     
-    spectra.aggregate <- aggregate(spectra, by=list(spectra$Energy, spectra$Spectrum), FUN=mean)
-    new.spectra <- data.frame(Energy=spectra.aggregate$Group.1, CPS=spectra.aggregate$CPS, Spectrum=spectra.aggregate$Group.2)
-    
-    data <- reshape2::dcast(new.spectra, Spectrum~Energy, value.var="CPS")
+    data <- as.data.frame(dcast.data.table(spectra.aggregate, Spectrum~Energy, value.var="CPS"))
     
     #test <- apply(test, 2, as.numeric)
     colnames(data) <- make.names(colnames(data))
@@ -2030,10 +2030,10 @@ spectra.tc.prep <- function(spectra){
     
     spectra$Energy <- round(spectra$Energy, 1)
     
-    spectra.aggregate <- aggregate(spectra, by=list(spectra$Energy, spectra$Spectrum), FUN=mean)
-    new.spectra <- data.frame(Energy=spectra.aggregate$Group.1, CPS=spectra.aggregate$CPS, Spectrum=spectra.aggregate$Group.2)
+    spectra <- data.table(spectra)
+    spectra.aggregate <- spectra[, list(CPS=mean(CPS, na.rm = TRUE)), by = list(Spectrum,Energy)]
     
-    data <- reshape2::dcast(new.spectra, Spectrum~Energy, value.var="CPS")
+    data <- as.data.frame(dcast.data.table(spectra.aggregate, Spectrum~Energy, value.var="CPS"))
     
     #test <- apply(test, 2, as.numeric)
     colnames(data) <- make.names(colnames(data))
@@ -2059,10 +2059,10 @@ spectra.comp.prep <- function(spectra, norm.min, norm.max){
     
     spectra$Energy <- round(spectra$Energy, 1)
     
-    spectra.aggregate <- aggregate(spectra, by=list(spectra$Energy, spectra$Spectrum), FUN=mean)
-    new.spectra <- data.frame(Energy=spectra.aggregate$Group.1, CPS=spectra.aggregate$CPS, Spectrum=spectra.aggregate$Group.2)
+    spectra <- data.table(spectra)
+    spectra.aggregate <- spectra[, list(CPS=mean(CPS, na.rm = TRUE)), by = list(Spectrum,Energy)]
     
-    data <- reshape2::dcast(new.spectra, Spectrum~Energy, value.var="CPS")
+    data <- as.data.frame(dcast.data.table(spectra.aggregate, Spectrum~Energy, value.var="CPS"))
     #test <- apply(test, 2, as.numeric)
     colnames(data) <- make.names(colnames(data))
     
