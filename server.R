@@ -345,19 +345,19 @@ bestNormVars <- reactive({
     
     
     time.bic <- if(dataType()=="Spectra"){
-        extractAIC(lm(concentration.table[, input$calcurveelement]~general.prep(spectra.line.table, input$calcurveelement)$Intensity, k=log(length(1))))[2]
+        extractAIC(lm(concentration.table[, input$calcurveelement]~general_prep_xrf(spectra.line.table, input$calcurveelement)$Intensity, k=log(length(1))))[2]
     } else if(dataType()=="Net"){
-        extractAIC(lm(concentration.table[, input$calcurveelement]~general.prep.net(spectra.line.table, input$calcurveelement)$Intensity, k=log(length(1))))[2]
+        extractAIC(lm(concentration.table[, input$calcurveelement]~general_prep_xrf_net(spectra.line.table, input$calcurveelement)$Intensity, k=log(length(1))))[2]
     }
     
     tc.bic <- if(dataType()=="Spectra"){
-        extractAIC(lm(concentration.table[, input$calcurveelement]~simple.tc.prep(data, spectra.line.table, input$calcurveelement)$Intensity, k=log(length(1))))[2]
+        extractAIC(lm(concentration.table[, input$calcurveelement]~simple_tc_prep_xrf(data, spectra.line.table, input$calcurveelement)$Intensity, k=log(length(1))))[2]
     } else if(dataType()=="Net"){
-        extractAIC(lm(concentration.table[, input$calcurveelement]~simple.tc.prep.net(data, spectra.line.table, input$calcurveelement)$Intensity, k=log(length(1))))[2]
+        extractAIC(lm(concentration.table[, input$calcurveelement]~simple_tc_prep_xrf_net(data, spectra.line.table, input$calcurveelement)$Intensity, k=log(length(1))))[2]
     }
     
     comp.bic <- if(dataType()=="Spectra"){
-        optimal_norm_chain(data=data, element=element, spectra.line.table=spectra.line.table, values=concentration.table, possible.mins=norm.list[["Min"]], possible.maxs=norm.list[["Max"]])
+        optimal_norm_chain_xrf(data=data, element=element, spectra.line.table=spectra.line.table, values=concentration.table, possible.mins=norm.list[["Min"]], possible.maxs=norm.list[["Max"]])
     } else if(dataType()=="Net"){
         time.bic
     }
@@ -471,9 +471,9 @@ cephlopodVector <- reactive({
         
     }
     
-    if(!is.null(likely_intercepts(input$calcurveelement))){
-        combos_mod(likely_intercepts(input$calcurveelement))
-    } else if(is.null(likely_intercepts(input$calcurveelement))){
+    if(!is.null(likely_intercepts_xrf(input$calcurveelement))){
+        combos_mod(likely_intercepts_xrf(input$calcurveelement))
+    } else if(is.null(likely_intercepts_xrf(input$calcurveelement))){
         c("Rh.K.alpha", "Rh.L.alpha")
     }
     
@@ -500,14 +500,14 @@ bestInterceptVars <- reactive({
     
     
     predict.intensity.list <- if(input$normcal==1){
-        pblapply(cephlopodVector(), function(x) lucas.simp.prep(spectra.line.table=spectra.line.table, element.line=element, slope.element.lines=element, intercept.element.lines=c(element, x)))
+        pblapply(cephlopodVector(), function(x) lucas_simp_prep_xrf(spectra.line.table=spectra.line.table, element.line=element, slope.element.lines=element, intercept.element.lines=c(element, x)))
     } else if(input$normcal==2){
-        pblapply(cephlopodVector(), function(x) lucas.tc.prep(data=data, spectra.line.table=spectra.line.table, element.line=element, slope.element.lines=element, intercept.element.lines=c(element, x)))
+        pblapply(cephlopodVector(), function(x) lucas_tc_prep_xrf(data=data, spectra.line.table=spectra.line.table, element.line=element, slope.element.lines=element, intercept.element.lines=c(element, x)))
     } else if(input$normcal==3){
-        pblapply(cephlopodVector(), function(x) lucas.comp.prep(data=data, spectra.line.table=spectra.line.table, element.line=element, slope.element.lines=element, intercept.element.lines=c(element, x), norm.min=input$comptonmin, norm.max=input$comptonmax))
+        pblapply(cephlopodVector(), function(x) lucas_comp_prep_xrf(data=data, spectra.line.table=spectra.line.table, element.line=element, slope.element.lines=element, intercept.element.lines=c(element, x), norm.min=input$comptonmin, norm.max=input$comptonmax))
     }
     
-    optimal_intercept_chain(element=element, intensities=predict.intensity.list, values=concentration.table, keep=vals$keeprows)
+    optimal_intercept_chain_xrf(element=element, intensities=predict.intensity.list, values=concentration.table, keep=vals$keeprows)
     
     
 })
@@ -574,19 +574,19 @@ caretSlope <- reactive({
 
     cal.table <- if(dataType()=="Spectra"){
         if(input$normcal==1){
-            lucas.simp.prep(spectra.line.table=spectra.line.table, element.line=input$calcurveelemenet,slope.element.lines=colnames(spectra.line.table[,-1]), intercept.element.lines=input$intercept_vars)
+            lucas_simp_prep_xrf(spectra.line.table=spectra.line.table, element.line=input$calcurveelemenet,slope.element.lines=colnames(spectra.line.table[,-1]), intercept.element.lines=input$intercept_vars)
         } else if(input$normcal==2){
-            lucas.tc.prep(data=data, spectra.line.table=spectra.line.table, element.line=input$calcurveelement, slope.element.lines=colnames(spectra.line.table[,-1]), intercept.element.lines=input$intercept_vars)
+            lucas_tc_prep_xrf(data=data, spectra.line.table=spectra.line.table, element.line=input$calcurveelement, slope.element.lines=colnames(spectra.line.table[,-1]), intercept.element.lines=input$intercept_vars)
         } else if(input$normcal==3){
-            lucas.comp.prep(data=data, spectra.line.table=spectra.line.table, element.line=input$calcurveelement, slope.element.lines=colnames(spectra.line.table[,-1]), intercept.element.lines=input$intercept_vars, norm.min=input$comptonmin, norm.max=input$comptonmax)
+            lucas_comp_prep_xrf(data=data, spectra.line.table=spectra.line.table, element.line=input$calcurveelement, slope.element.lines=colnames(spectra.line.table[,-1]), intercept.element.lines=input$intercept_vars, norm.min=input$comptonmin, norm.max=input$comptonmax)
         }
     } else if(dataType()=="Net"){
         if(input$normcal==1){
-            lucas.simp.prep.net(spectra.line.table=spectra.line.table, element.line=input$calcurveelemenet,slope.element.lines=colnames(spectra.line.table[,-1]), intercept.element.lines=input$intercept_vars)
+            lucas_simp_prep_xrf_net(spectra.line.table=spectra.line.table, element.line=input$calcurveelemenet,slope.element.lines=colnames(spectra.line.table[,-1]), intercept.element.lines=input$intercept_vars)
         } else if(input$normcal==2){
-            lucas.tc.prep.net(data=data, spectra.line.table=spectra.line.table, element.line=input$calcurveelement, slope.element.lines=colnames(spectra.line.table[,-1]), intercept.element.lines=input$intercept_vars)
+            lucas_tc_prep_xrf_net(data=data, spectra.line.table=spectra.line.table, element.line=input$calcurveelement, slope.element.lines=colnames(spectra.line.table[,-1]), intercept.element.lines=input$intercept_vars)
         } else if(input$normcal==3){
-            lucas.comp.prep.net(data=data, spectra.line.table=spectra.line.table, element.line=input$calcurveelement, slope.element.lines=colnames(spectra.line.table[,-1]), intercept.element.lines=input$intercept_vars, norm.min=input$comptonmin, norm.max=input$comptonmax)
+            lucas_comp_prep_xrf_net(data=data, spectra.line.table=spectra.line.table, element.line=input$calcurveelement, slope.element.lines=colnames(spectra.line.table[,-1]), intercept.element.lines=input$intercept_vars, norm.min=input$comptonmin, norm.max=input$comptonmax)
         }
     }
     
@@ -755,27 +755,27 @@ bestSlopeVars <- reactive({
     
     predict.intensity <- if(input$normcal==1){
        if(dataType()=="Spectra"){
-            lucas.simp.prep(spectra.line.table=spectra.line.table, element.line=element, slope.element.lines=choices, intercept.element.lines=input$intercept_vars)
+            lucas_simp_prep_xrf(spectra.line.table=spectra.line.table, element.line=element, slope.element.lines=choices, intercept.element.lines=input$intercept_vars)
         } else if(dataType()=="Net"){
-            lucas.simp.prep.net(spectra.line.table=spectra.line.table, element.line=element, slope.element.lines=choices, intercept.element.lines=input$intercept_vars)
+            lucas_simp_prep_xrf_net(spectra.line.table=spectra.line.table, element.line=element, slope.element.lines=choices, intercept.element.lines=input$intercept_vars)
         }
     } else if(input$normcal==2){
         predict.intensity <- if(dataType()=="Spectra"){
-            lucas.tc.prep(data=data, spectra.line.table=spectra.line.table, element.line=element, slope.element.lines=choices, intercept.element.lines=input$intercept_vars)
+            lucas_tc_prep_xrf(data=data, spectra.line.table=spectra.line.table, element.line=element, slope.element.lines=choices, intercept.element.lines=input$intercept_vars)
         } else if(dataType()=="Net"){
-            lucas.tc.prep.net(data=data, spectra.line.table=spectra.line.table, element.line=element, slope.element.lines=choices, intercept.element.lines=input$intercept_vars)
+            lucas_tc_prep_xrf_net(data=data, spectra.line.table=spectra.line.table, element.line=element, slope.element.lines=choices, intercept.element.lines=input$intercept_vars)
         }
     } else if(input$normcal==3){
         predict.intensity <- if(dataType()=="Spectra"){
-            lucas.comp.prep(data=data, spectra.line.table=spectra.line.table, element.line=element, slope.element.lines=choices, intercept.element.lines=input$intercept_vars, norm.min=input$comptonmin, norm.max=input$comptonmax)
+            lucas_comp_prep_xrf(data=data, spectra.line.table=spectra.line.table, element.line=element, slope.element.lines=choices, intercept.element.lines=input$intercept_vars, norm.min=input$comptonmin, norm.max=input$comptonmax)
         } else if(dataType()=="Net"){
-            lucas.comp.prep.net(data=data, spectra.line.table=spectra.line.table, element.line=element, slope.element.lines=choices, intercept.element.lines=input$intercept_vars, norm.min=input$comptonmin, norm.max=input$comptonmax)
+            lucas_comp_prep_xrf_net(data=data, spectra.line.table=spectra.line.table, element.line=element, slope.element.lines=choices, intercept.element.lines=input$intercept_vars, norm.min=input$comptonmin, norm.max=input$comptonmax)
         }
     }
 
     
     
-    #optimal_r_chain(element=element, intensities=predict.intensity, values= concentration.table, possible.slopes=fishVector(), keep=vals$keeprows)
+    #optimal_r_chain.xrf(element=element, intensities=predict.intensity, values= concentration.table, possible.slopes=fishVector(), keep=vals$keeprows)
     
     results <- variable_select_short(slopeImportance())
     
@@ -848,27 +848,47 @@ bestCalType <- reactive({
     
     
     #concentration.table <- concentration.table[complete.cases(concentration.table[, input$calcurveelement]),]
-
+    
     #spectra.line.table <- spectra.line.table[complete.cases(concentration.table[, input$calcurveelement]),]
     #data <- data[data$Spectrum %in% concentration.table$Spectrum, ]
     
     predict.intensity <- if(input$normcal==1){
         if(dataType()=="Spectra"){
-            lucas.simp.prep(spectra.line.table=spectra.line.table, element.line=input$calcurveelement, slope.element.lines=elementallinestouse(), intercept.element.lines=input$intercept_vars)
+            lucas_simp_prep_xrf(spectra.line.table=spectra.line.table, element.line=input$calcurveelement, slope.element.lines=elementallinestouse(), intercept.element.lines=input$intercept_vars)
         } else if(dataType()=="Net"){
-            lucas.simp.prep.net(spectra.line.table=spectra.line.table, element.line=input$calcurveelement, slope.element.lines=elementallinestouse(), intercept.element.lines=input$intercept_vars)
+            lucas_simp_prep_xrf_net(spectra.line.table=spectra.line.table, element.line=input$calcurveelement, slope.element.lines=elementallinestouse(), intercept.element.lines=input$intercept_vars)
         }
     } else if(input$normcal==2){
         predict.intensity <- if(dataType()=="Spectra"){
-            lucas.tc.prep(data=data, spectra.line.table=spectra.line.table, element.line=input$calcurveelement, slope.element.lines=elementallinestouse(), intercept.element.lines=input$intercept_vars)
+            lucas_tc_prep_xrf(data=data, spectra.line.table=spectra.line.table, element.line=input$calcurveelement, slope.element.lines=elementallinestouse(), intercept.element.lines=input$intercept_vars)
         } else if(dataType()=="Net"){
-            lucas.tc.prep.net(data=data, spectra.line.table=spectra.line.table, element.line=input$calcurveelement, slope.element.lines=elementallinestouse(), intercept.element.lines=input$intercept_vars)
+            lucas_tc_prep_xrf_net(data=data, spectra.line.table=spectra.line.table, element.line=input$calcurveelement, slope.element.lines=elementallinestouse(), intercept.element.lines=input$intercept_vars)
         }
     } else if(input$normcal==3){
         predict.intensity <- if(dataType()=="Spectra"){
-            lucas.comp.prep(data=data, spectra.line.table=spectra.line.table, element.line=input$calcurveelement, slope.element.lines=elementallinestouse(), intercept.element.lines=input$intercept_vars, norm.min=input$comptonmin, norm.max=input$comptonmax)
+            lucas_comp_prep_xrf(data=data, spectra.line.table=spectra.line.table, element.line=input$calcurveelement, slope.element.lines=elementallinestouse(), intercept.element.lines=input$intercept_vars, norm.min=input$comptonmin, norm.max=input$comptonmax)
         } else if(dataType()=="Net"){
-            lucas.comp.prep.net(data=data, spectra.line.table=spectra.line.table, element.line=input$calcurveelement, slope.element.lines=elementallinestouse(), intercept.element.lines=input$intercept_vars, norm.min=input$comptonmin, norm.max=input$comptonmax)
+            lucas_comp_prep_xrf_net(data=data, spectra.line.table=spectra.line.table, element.line=input$calcurveelement, slope.element.lines=elementallinestouse(), intercept.element.lines=input$intercept_vars, norm.min=input$comptonmin, norm.max=input$comptonmax)
+        }
+    }
+    
+    if(input$normcal==1){
+        spectra.data <- if(dataType()=="Spectra"){
+            spectra_simp_prep_xrf(spectra=data)[,-1]
+        } else if(dataType()=="Net"){
+            NULL
+        }
+    } else if(input$normcal==2){
+        spectra.data <- if(dataType()=="Spectra"){
+            spectra_tc_prep_xrf(spectra=data)[,-1]
+        } else if(dataType()=="Net"){
+            NULL
+        }
+    } else if(input$normcal==3){
+        spectra.data <- if(dataType()=="Spectra"){
+            spectra_comp_prep_xrf(spectra=data, norm.min=input$comptonmin, norm.max=input$comptonmax)[,-1]
+        } else if(dataType()=="Net"){
+            NULL
         }
     }
     
@@ -879,12 +899,13 @@ bestCalType <- reactive({
     predict.frame <- predict.frame[vals$keeprows,]
     colnames(predict.frame) <- c(names(predict.intensity), "Concentration")
     predict.frame <- predict.frame[complete.cases(predict.frame$Concentration),]
-
+    spectra.data$Concentration <- concentration.table[,input$calcurveelement]
+    spectra.data <- spectra.data[complete.cases(concentration.table[,input$calcurveelement]),]
     
     predict.frame.simp <- predict.frame[,c("Concentration", "Intensity")]
     predict.frame.luc <- predict.frame[, c("Concentration", "Intensity", input$slope_vars)]
     predict.frame.forest <- predict.frame
-    
+    predict.frame.rainforest <- spectra.data
     
     cal.lm.simp <- lm(Concentration~Intensity, data=predict.frame.simp, na.action=na.exclude)
     
@@ -897,8 +918,13 @@ bestCalType <- reactive({
     forest.predict <- predict(cal.lm.forest, new.data=predict.frame.forest, proximity=FALSE)
     forest.sum <- lm(predict.frame$Concentration~forest.predict, na.action=na.exclude)
     
+    cal.lm.rainforest <- randomForest(Concentration~., data=predict.frame.forest, na.action=na.omit)
     
-    r2.vector <- c(summary(cal.lm.simp)$adj.r.squared, summary(cal.lm.two)$adj.r.squared-.5, summary(cal.lm.luc)$adj.r.squared, summary(forest.sum)$adj.r.squared)
+    rainforest.predict <- predict(cal.lm.rainforest, new.data=predict.frame.rainforest, proximity=FALSE)
+    rainforest.sum <- lm(predict.frame$Concentration~rainforest.predict, na.action=na.exclude)
+    
+    
+    r2.vector <- c(summary(cal.lm.simp)$adj.r.squared, summary(cal.lm.two)$adj.r.squared-.5, summary(cal.lm.luc)$adj.r.squared, summary(forest.sum)$adj.r.squared, summary(rainforest.sum)$adj.r.squared)
     which.max(r2.vector)
     
     
@@ -1149,25 +1175,25 @@ dataType <- reactive({
           
           if(input$normcal==1){
               predict.intensity <- if(dataType()=="Spectra"){
-                  general.prep(spectra.line.table=spectra.line.table, element.line=input$calcurveelement)
+                  general_prep_xrf(spectra.line.table=spectra.line.table, element.line=input$calcurveelement)
               } else if(dataType()=="Net"){
-                  general.prep.net(spectra.line.table=spectra.line.table, element.line=input$calcurveelement)
+                  general_prep_xrf_net(spectra.line.table=spectra.line.table, element.line=input$calcurveelement)
               }
           }
           
           if(input$normcal==2){
               predict.intensity <- if(dataType()=="Spectra"){
-                  simple.tc.prep(data=data, spectra.line.table=spectra.line.table, element.line=input$calcurveelement)
+                  simple_tc_prep_xrf(data=data, spectra.line.table=spectra.line.table, element.line=input$calcurveelement)
               } else if(dataType()=="Net"){
-                  simple.tc.prep.net(data=data, spectra.line.table=spectra.line.table, element.line=input$calcurveelement)
+                  simple_tc_prep_xrf_net(data=data, spectra.line.table=spectra.line.table, element.line=input$calcurveelement)
               }
           }
           
           if(input$normcal==3){
               predict.intensity <- if(dataType()=="Spectra"){
-                  simple.comp.prep(data=data, spectra.line.table=spectra.line.table, element.line=input$calcurveelement, norm.min=input$comptonmin, norm.max=input$comptonmax)
+                  simple_comp_prep_xrf(data=data, spectra.line.table=spectra.line.table, element.line=input$calcurveelement, norm.min=input$comptonmin, norm.max=input$comptonmax)
               } else if(dataType()=="Net"){
-                  simple.comp.prep.net(data=data, spectra.line.table=spectra.line.table, element.line=input$calcurveelement, norm.min=input$comptonmin, norm.max=input$comptonmax)
+                  simple_comp_prep_xrf_net(data=data, spectra.line.table=spectra.line.table, element.line=input$calcurveelement, norm.min=input$comptonmin, norm.max=input$comptonmax)
               }
           }
           
@@ -1177,25 +1203,25 @@ dataType <- reactive({
               
               if(input$normcal==1){
                   predict.intensity <- if(dataType()=="Spectra"){
-                      general.prep(spectra.line.table=spectra.line.table, element.line=input$calcurveelement)
+                      general_prep_xrf(spectra.line.table=spectra.line.table, element.line=input$calcurveelement)
                   } else if(dataType()=="Net"){
-                      general.prep.net(spectra.line.table=spectra.line.table, element.line=input$calcurveelement)
+                      general_prep_xrf_net(spectra.line.table=spectra.line.table, element.line=input$calcurveelement)
                   }
               }
               
               if(input$normcal==2){
                   predict.intensity <- if(dataType()=="Spectra"){
-                      simple.tc.prep(data=data, spectra.line.table=spectra.line.table, element.line=input$calcurveelement)
+                      simple_tc_prep_xrf(data=data, spectra.line.table=spectra.line.table, element.line=input$calcurveelement)
                   } else if(dataType()=="Net"){
-                      simple.tc.prep.net(data=data, spectra.line.table=spectra.line.table, element.line=input$calcurveelement)
+                      simple_tc_prep_xrf_net(data=data, spectra.line.table=spectra.line.table, element.line=input$calcurveelement)
                   }
               }
           
           if(input$normcal==3){
               predict.intensity <- if(dataType()=="Spectra"){
-                  simple.comp.prep(data=data, spectra.line.table=spectra.line.table, element.line=input$calcurveelement, norm.min=input$comptonmin, norm.max=input$comptonmax)
+                  simple_comp_prep_xrf(data=data, spectra.line.table=spectra.line.table, element.line=input$calcurveelement, norm.min=input$comptonmin, norm.max=input$comptonmax)
               } else if(dataType()=="Net"){
-                  simple.comp.prep.net(data=data, spectra.line.table=spectra.line.table, element.line=input$calcurveelement, norm.min=input$comptonmin, norm.max=input$comptonmax)
+                  simple_comp_prep_xrf_net(data=data, spectra.line.table=spectra.line.table, element.line=input$calcurveelement, norm.min=input$comptonmin, norm.max=input$comptonmax)
               }
           }
           
@@ -1206,25 +1232,25 @@ dataType <- reactive({
           
           if(input$normcal==1){
               predict.intensity <- if(dataType()=="Spectra"){
-                  lucas.simp.prep(spectra.line.table=spectra.line.table, element.line=input$calcurveelement, slope.element.lines=input$slope_vars, intercept.element.lines=input$intercept_vars)
+                  lucas_simp_prep_xrf(spectra.line.table=spectra.line.table, element.line=input$calcurveelement, slope.element.lines=input$slope_vars, intercept.element.lines=input$intercept_vars)
               } else if(dataType()=="Net"){
-                  lucas.simp.prep.net(spectra.line.table=spectra.line.table, element.line=input$calcurveelement, slope.element.lines=input$slope_vars, intercept.element.lines=input$intercept_vars)
+                  lucas_simp_prep_xrf_net(spectra.line.table=spectra.line.table, element.line=input$calcurveelement, slope.element.lines=input$slope_vars, intercept.element.lines=input$intercept_vars)
               }
           }
           
           if(input$normcal==2){
               predict.intensity <- if(dataType()=="Spectra"){
-                  lucas.tc.prep(data=data, spectra.line.table=spectra.line.table, element.line=input$calcurveelement, slope.element.lines=input$slope_vars, intercept.element.lines=input$intercept_vars)
+                  lucas_tc_prep_xrf(data=data, spectra.line.table=spectra.line.table, element.line=input$calcurveelement, slope.element.lines=input$slope_vars, intercept.element.lines=input$intercept_vars)
               } else if(dataType()=="Net"){
-                  lucas.tc.prep.net(data=data, spectra.line.table=spectra.line.table, element.line=input$calcurveelement, slope.element.lines=input$slope_vars, intercept.element.lines=input$intercept_vars)
+                  lucas_tc_prep_xrf_net(data=data, spectra.line.table=spectra.line.table, element.line=input$calcurveelement, slope.element.lines=input$slope_vars, intercept.element.lines=input$intercept_vars)
               }
           }
           
           if(input$normcal==3){
               predict.intensity <- if(dataType()=="Spectra"){
-                  lucas.comp.prep(data=data, spectra.line.table=spectra.line.table, element.line=input$calcurveelement, slope.element.lines=input$slope_vars, intercept.element.lines=input$intercept_vars, norm.min=input$comptonmin, norm.max=input$comptonmax)
+                  lucas_comp_prep_xrf(data=data, spectra.line.table=spectra.line.table, element.line=input$calcurveelement, slope.element.lines=input$slope_vars, intercept.element.lines=input$intercept_vars, norm.min=input$comptonmin, norm.max=input$comptonmax)
               } else if(dataType()=="Net"){
-                  lucas.comp.prep.net(data=data, spectra.line.table=spectra.line.table, element.line=input$calcurveelement, slope.element.lines=input$slope_vars, intercept.element.lines=input$intercept_vars, norm.min=input$comptonmin, norm.max=input$comptonmax)
+                  lucas_comp_prep_xrf_net(data=data, spectra.line.table=spectra.line.table, element.line=input$calcurveelement, slope.element.lines=input$slope_vars, intercept.element.lines=input$intercept_vars, norm.min=input$comptonmin, norm.max=input$comptonmax)
               }
           }
           
@@ -1237,21 +1263,21 @@ dataType <- reactive({
 
           predict.intensity <- if(input$normcal==1){
               if(dataType()=="Spectra"){
-                  lucas.simp.prep(spectra.line.table=spectra.line.table, element.line=input$calcurveelement, slope.element.lines=elementallinestouse(), intercept.element.lines=input$intercept_vars)
+                  lucas_simp_prep_xrf(spectra.line.table=spectra.line.table, element.line=input$calcurveelement, slope.element.lines=elementallinestouse(), intercept.element.lines=input$intercept_vars)
               } else if(dataType()=="Net"){
-                  lucas.simp.prep.net(spectra.line.table=spectra.line.table, element.line=input$calcurveelement, slope.element.lines=elementallinestouse(), intercept.element.lines=input$intercept_vars)
+                  lucas_simp_prep_xrf_net(spectra.line.table=spectra.line.table, element.line=input$calcurveelement, slope.element.lines=elementallinestouse(), intercept.element.lines=input$intercept_vars)
               }
           } else if(input$normcal==2){
               predict.intensity <- if(dataType()=="Spectra"){
-                  lucas.tc.prep(data=data, spectra.line.table=spectra.line.table, element.line=input$calcurveelement, slope.element.lines=elementallinestouse(), intercept.element.lines=input$intercept_vars)
+                  lucas_tc_prep_xrf(data=data, spectra.line.table=spectra.line.table, element.line=input$calcurveelement, slope.element.lines=elementallinestouse(), intercept.element.lines=input$intercept_vars)
               } else if(dataType()=="Net"){
-                  lucas.tc.prep.net(data=data, spectra.line.table=spectra.line.table, element.line=input$calcurveelement, slope.element.lines=elementallinestouse(), intercept.element.lines=input$intercept_vars)
+                  lucas_tc_prep_xrf_net(data=data, spectra.line.table=spectra.line.table, element.line=input$calcurveelement, slope.element.lines=elementallinestouse(), intercept.element.lines=input$intercept_vars)
               }
           } else if(input$normcal==3){
               predict.intensity <- if(dataType()=="Spectra"){
-                  lucas.comp.prep(data=data, spectra.line.table=spectra.line.table, element.line=input$calcurveelement, slope.element.lines=elementallinestouse(), intercept.element.lines=input$intercept_vars, norm.min=input$comptonmin, norm.max=input$comptonmax)
+                  lucas_comp_prep_xrf(data=data, spectra.line.table=spectra.line.table, element.line=input$calcurveelement, slope.element.lines=elementallinestouse(), intercept.element.lines=input$intercept_vars, norm.min=input$comptonmin, norm.max=input$comptonmax)
               } else if(dataType()=="Net"){
-                  lucas.comp.prep.net(data=data, spectra.line.table=spectra.line.table, element.line=input$calcurveelement, slope.element.lines=elementallinestouse(), intercept.element.lines=input$intercept_vars, norm.min=input$comptonmin, norm.max=input$comptonmax)
+                  lucas_comp_prep_xrf_net(data=data, spectra.line.table=spectra.line.table, element.line=input$calcurveelement, slope.element.lines=elementallinestouse(), intercept.element.lines=input$intercept_vars, norm.min=input$comptonmin, norm.max=input$comptonmax)
               }
           }
           
@@ -1261,19 +1287,19 @@ dataType <- reactive({
       if (input$radiocal==5){
           if(input$normcal==1){
               predict.intensity <- if(dataType()=="Spectra"){
-                  spectra.simp.prep(spectra=data)[,-1]
+                  spectra_simp_prep_xrf(spectra=data)[,-1]
               } else if(dataType()=="Net"){
                   NULL
               }
           } else if(input$normcal==2){
               predict.intensity <- if(dataType()=="Spectra"){
-                  spectra.tc.prep(spectra=data)[,-1]
+                  spectra_tc_prep_xrf(spectra=data)[,-1]
               } else if(dataType()=="Net"){
                   NULL
               }
           } else if(input$normcal==3){
               predict.intensity <- if(dataType()=="Spectra"){
-                  spectra.comp.prep(spectra=data, norm.min=input$comptonmin, norm.max=input$comptonmax)[,-1]
+                  spectra_comp_prep_xrf(spectra=data, norm.min=input$comptonmin, norm.max=input$comptonmax)[,-1]
               } else if(dataType()=="Net"){
                   NULL
               }
