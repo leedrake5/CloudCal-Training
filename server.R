@@ -2174,7 +2174,7 @@ dataType <- reactive({
   # Float over info
   output$hover_infocal <- renderUI({
       
-      point.table <- if(calType()==3){
+      point.table <- if(calType()==1){
           calCurveFrame()
       } else if(calType()==2){
           calCurveFrame()
@@ -2228,7 +2228,7 @@ dataType <- reactive({
   # Float over info
   output$hover_infocal_random <- renderUI({
       
-      point.table <- if(calType()==3){
+      point.table <- if(calType()==1){
           calCurveFrame()
       } else if(calType()==2){
           calCurveFrame()
@@ -2292,7 +2292,7 @@ dataType <- reactive({
   # Toggle points that are clicked
   observeEvent(input$plot_cal_click, {
       
-      predict.frame <- if(calType()==3){
+      predict.frame <- if(calType()==1){
           calCurveFrame()
       } else if(calType()==2){
           calCurveFrame()
@@ -2328,7 +2328,7 @@ dataType <- reactive({
   # Reset all points
   observeEvent(input$exclude_reset, {
       
-      predict.frame <- if(calType()==3){
+      predict.frame <- if(calType()==1){
           calCurveFrame()
       } else if(calType()==2){
           calCurveFrame()
