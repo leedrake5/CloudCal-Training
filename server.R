@@ -2695,6 +2695,14 @@ dataType <- reactive({
       
   })
   
+  
+  output$diagplots <- downloadHandler(
+  filename = function() { paste(input$calname, "_", input$calcurveelement, "_diag", ".tiff", sep='') },
+  content = function(file) {
+      ggsave(file,diagPlotDownload(), width=10, height=10, device="tiff", compression="lzw", type="cairo", dpi=300, )
+  }
+  )
+  
   #########Diagnostic Plot Controls#######
   ####Residuals Fitted
   # Float over info

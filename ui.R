@@ -15,7 +15,7 @@ tagList(
 header=tags$head(tags$style(".table .alignRight {color: black; text-align:right;}"))),
 
 
-shinyUI(navbarPage("CloudCal", id="nav", theme = shinytheme("flatly"),
+shinyUI(navbarPage("CloudCal", id="nav", theme = shinytheme("yeti"),
 
 
 
@@ -32,9 +32,11 @@ tags$style(type="text/css",
 ".shiny-output-error:before { visibility: hidden; }"
 ),
 
-downloadButton('downloadcloudplot', "Plot"),
 actionButton('createcalelement', "Update"),
 actionButton('createcal', "Save"),
+
+tags$hr(),
+
 downloadButton('downloadModel', "Model"),
 downloadButton('downloadReport', "Report"),
 
@@ -90,7 +92,8 @@ tabPanel("Cal Curves",
         ),
         tags$hr(),
         actionButton("exclude_toggle", "Toggle points"),
-        actionButton("exclude_reset", "Reset")
+        actionButton("exclude_reset", "Reset"),
+        downloadButton('downloadcloudplot', "Plot")
 
 ),
 
@@ -155,8 +158,11 @@ tabPanel("Diagnostics",
             hover = hoverOpts("plot_hovercooksleverage", delay = 100, delayType = "debounce")),
         uiOutput("hover_infocooksleverage"))
 ),
+tags$hr(),
 actionButton("exclude_toggle_diag", "Toggle points"),
-actionButton("exclude_reset_diag", "Reset")),
+actionButton("exclude_reset_diag", "Reset"),
+downloadButton('diagplots', "Plot")
+),
 
 tabPanel("Variables", plotOutput('importanceplot', hover = hoverOpts('plot_hover_variable', delay = 100, delayType = "debounce")),
 uiOutput('hover_info_variable')),
