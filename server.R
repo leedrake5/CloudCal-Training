@@ -850,7 +850,7 @@ bestCalType <- reactive({
     #concentration.table <- concentration.table[complete.cases(concentration.table[, input$calcurveelement]),]
     
     #spectra.line.table <- spectra.line.table[complete.cases(concentration.table[, input$calcurveelement]),]
-    #data <- data[data$Spectrum %in% concentration.table$Spectrum, ]
+    #data2 <- data[data$Spectrum %in% concentration.table$Spectrum, ]
     
     predict.intensity <- if(input$normcal==1){
         if(dataType()=="Spectra"){
@@ -899,8 +899,11 @@ bestCalType <- reactive({
     predict.frame <- predict.frame[vals$keeprows,]
     colnames(predict.frame) <- c(names(predict.intensity), "Concentration")
     predict.frame <- predict.frame[complete.cases(predict.frame$Concentration),]
-    spectra.data$Concentration <- concentration.table[,input$calcurveelement]
-    spectra.data <- spectra.data[complete.cases(concentration.table[,input$calcurveelement]),]
+    
+    spectra.data$Concentration <- concentration.table[complete.cases(concentration.table[,input$calcurveelement]),input$calcurveelement]
+    spectra.data <- spectra.data[complete.cases(spectra.data$Concentration),]
+    spectra.data <- spectra.data[vals$keeprows,]
+    
     
     predict.frame.simp <- predict.frame[,c("Concentration", "Intensity")]
     predict.frame.luc <- predict.frame[, c("Concentration", "Intensity", input$slope_vars)]
@@ -908,25 +911,29 @@ bestCalType <- reactive({
     predict.frame.rainforest <- spectra.data
     
     cal.lm.simp <- lm(Concentration~Intensity, data=predict.frame.simp, na.action=na.exclude)
+    lm.predict <- predict(cal.lm.simp, new.data=predict.frame.simp, proximity=FALSE)
+    lm.sum <- summary(lm(predict.frame$Concentration~lm.predict, na.action=na.exclude))
     
     cal.lm.two <- lm(Concentration~Intensity + I(Intensity^2), data=predict.frame.simp, na.action=na.exclude)
+    lm2.predict <- predict(cal.lm.two, new.data=predict.frame.simp, proximity=FALSE)
+    lm2.sum <- summary(lm(predict.frame$Concentration~lm2.predict, na.action=na.exclude))
     
     cal.lm.luc <- lm(Concentration~., data=predict.frame.luc, na.action=na.exclude)
+    lucas.predict <- predict(cal.lm.luc, new.data=predict.frame.luc, proximity=FALSE)
+    lucas.sum <- summary(lm(predict.frame$Concentration~lucas.predict, na.action=na.exclude))
     
     cal.lm.forest <- randomForest(Concentration~., data=predict.frame.forest, na.action=na.omit)
-    
     forest.predict <- predict(cal.lm.forest, new.data=predict.frame.forest, proximity=FALSE)
-    forest.sum <- lm(predict.frame$Concentration~forest.predict, na.action=na.exclude)
+    forest.sum <- summary(lm(predict.frame$Concentration~forest.predict, na.action=na.exclude))
     
     cal.lm.rainforest <- randomForest(Concentration~., data=spectra.data, na.action=na.omit)
-    
     rainforest.predict <- predict(cal.lm.rainforest, new.data=predict.frame.rainforest, proximity=FALSE)
-    rainforest.sum <- lm(predict.frame$Concentration~rainforest.predict, na.action=na.exclude)
+    rainforest.sum <- summary(lm(predict.frame$Concentration~rainforest.predict, na.action=na.exclude))
     
     
-    r2.vector <- c(summary(cal.lm.simp)$adj.r.squared, summary(cal.lm.two)$adj.r.squared-.5, summary(cal.lm.luc)$adj.r.squared, summary(forest.sum)$adj.r.squared, summary(rainforest.sum)$adj.r.squared)
-    which.max(r2.vector)
+    r2.slope.vector <- c(lm.sum$r.squared*lm.sum$coef[2], lm2.sum$r.squared*lm2.sum$coef[2], lucas.sum$r.squared*lucas.sum$coef[2], forest.sum$r.squared*forest.sum$coef[2], rainforest.sum$r.squared*rainforest.sum$coef[2])
     
+    Closest(r2.slope.vector, 1, which=TRUE)
     
 })
 
