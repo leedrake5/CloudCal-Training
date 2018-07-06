@@ -27,10 +27,10 @@ fluidRow(
 sidebarLayout(
 sidebarPanel(width=3,
 
-tags$style(type="text/css",
-".shiny-output-error { visibility: hidden; }",
-".shiny-output-error:before { visibility: hidden; }"
-),
+#tags$style(type="text/css",
+#".shiny-output-error { visibility: hidden; }",
+#".shiny-output-error:before { visibility: hidden; }"
+#),
 
 actionButton('createcalelement', "Update"),
 actionButton('createcal', "Save"),
@@ -124,6 +124,8 @@ tabPanel("Cross Validation",
 
 ),
 
+tabPanel("Models", dataTableOutput("models")),
+
 tabPanel("Diagnostics",
     splitLayout(cellWidths = c("50%", "50%"),
         div(
@@ -165,10 +167,16 @@ downloadButton('diagplots', "Plot")
 ),
 
 tabPanel("Variables",
-    div(
-    style = "position:relative",
-    plotOutput('importanceplot', hover = hoverOpts('plot_hover_variable', delay = 100, delayType = "debounce")),
-    uiOutput('hover_info_variable'))),
+div(
+style = "position:relative",
+plotOutput('importanceplot',
+hover = hoverOpts('plot_hover_variable', delay = 100, delayType = "debounce"),
+brush = brushOpts(id = 'plot_var_brush', resetOnNew = TRUE)),
+uiOutput('hover_info_variable')),
+tags$hr(),
+actionButton("cropvar", "Zoom"),
+downloadButton("variablePlot", "Plot"),
+uiOutput('varelementui')),
 
 tabPanel("Standards",
 tabsetPanel(

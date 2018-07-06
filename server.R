@@ -144,7 +144,41 @@ elementallinestouse <- reactive({
  })
 
 
+calFileContents <- reactive({
+    
+    calibration
+})
 
+
+#####Set Defaults
+
+
+calConditons <- reactiveValues()
+calList <- reactiveValues()
+calList <- NULL
+
+observeEvent(calFileIsTRUE, {
+    
+    cal.condition <- 3
+    norm.condition <- 1
+    
+    norm.min <- 18.5
+    norm.max <- 19.5
+    
+    cal.table <- data.frame(cal.condition, norm.condition, norm.min, norm.max)
+    colnames(cal.table) <- c("CalType", "NormType", "Min", "Max")
+    
+    slope.corrections <- input$slope_vars
+    intercept.corrections <- input$intercept_vars
+    
+    standards.used <- vals$keeprows
+    
+    cal.mode.list <- list(cal.table, slope.corrections, intercept.corrections, standards.used)
+    names(cal.mode.list) <- c("CalTable", "Slope", "Intercept", "StandardsUsed")
+    
+    calConditons <<- cal.mode.list
+    
+})
 
 
   
@@ -464,7 +498,7 @@ cephlopodVector <- reactive({
         
         so <- seq(from=1, to=length(a.vector), by=1)
         
-        long <- pblapply(so, function(x) gRbase::combnPrim(x=a.vector, m=x), cl=6L)
+        long <- pblapply(so, function(x) combnPrim(x=a.vector, m=x), cl=6L)
         and <- pblapply(long, function(x) plyr::alply(x, 2), cl=6L)
         thanks.for.all.the.fish <- do.call(list, unlist(and, recursive=FALSE))
         
@@ -602,6 +636,8 @@ caretSlope <- reactive({
 
 
 
+
+
 slopeImportance <- reactive({
     
     varImp(caretSlope(), scale=FALSE)
@@ -616,6 +652,7 @@ rainForestImportance <- reactive({
     
 })
 
+
 importanceFrame <- reactive({
     
     importance.frame <- rainForestImportance()
@@ -625,19 +662,53 @@ importanceFrame <- reactive({
     
 })
 
+
+
+importanceranges <- reactiveValues(x = NULL, y = NULL)
+
+
+
+
+
+
+
 rainForestImportancePlot <- reactive({
     
     importance.frame <- importanceFrame()
     
     
+    element <- datasetInputVar()
+    intensity.norm <- (element$Intensity/max(element$Intensity))*max(importance.frame$NodePurity)
+    intensity.base <- (element$Intensity/max(element$Intensity))
+    
     ggplot(importance.frame) +
+    geom_area(aes(Energy, NodePurity), fill="grey80", alpha=0.8) +
     geom_line(aes(Energy, NodePurity)) +
+    geom_segment(data=element, aes(x=Line, xend=Line, y = 0, yend=intensity.norm), colour="grey50", linetype=2)  +
     theme_light() +
-    scale_x_continuous("Energy (keV)")
+    scale_x_continuous("Energy (keV)") +
+    coord_cartesian(xlim = importanceranges$x, ylim = importanceranges$y, expand = TRUE)
     
     
 })
 
+# When a double-click happens, check if there's a brush on the plot.
+# If so, zoom to the brush bounds; if not, reset the zoom.
+observeEvent(input$cropvar, {
+    data <- dataHold()
+    brush <- input$plot_var_brush
+    if (!is.null(brush)) {
+        importanceranges$x <- c(brush$xmin, brush$xmax)
+        importanceranges$y <- c(brush$ymin, brush$ymax)
+        
+    } else {
+        importanceranges$x <- NULL
+        importanceranges$y <- NULL
+    }
+    
+    
+    
+})
 
 variablesPlot <- reactive({
     
@@ -650,6 +721,196 @@ variablesPlot <- reactive({
 })
 
 
+
+
+output$varelementui <- renderUI({
+    
+    selectInput(
+    "elementvar", "Element:",
+    choices=c("(Ne) Neon" = "Ne",
+    "(Na) Sodium" = "Na",
+    "(Mg) Magnesium" = "Mg",
+    "(Al) Aluminum" = "Al",
+    "(Si) Silicon" = "Si",
+    "(P)  Phosphorous" = "P",
+    "(S)  Sulfur" = "S",
+    "(Cl) Chlorine" = "Cl",
+    "(Ar) Argon" = "Ar",
+    "(K)  Potassium" = "K",
+    "(Ca) Calcium" = "Ca",
+    "(Sc) Scandium" = "Sc",
+    "(Ti) Titanium" = "Ti",
+    "(Cr) Chromium" = "Cr",
+    "(Mn) Manganese" = "Mn",
+    "(Fe) Iron" = "Fe",
+    "(Co) Cobalt" = "Co",
+    "(Ni) Nickel" = "Ni",
+    "(Cu) Copper" = "Cu",
+    "(Zn) Zinc"= "Zn",
+    "(Ga) Gallium" = "Ga",
+    "(Ge) Germanium" = "Ge",
+    "(As) Arsenic" = "As",
+    "(Se) Selenium" = "Se",
+    "(Br) Bromium" = "Br",
+    "(Kr) Krypton" = "Kr",
+    "(Rb) Rubidium" = "Rb",
+    "(Sr) Strontium" = "Sr",
+    "(Y)  Yttrium" = "Y",
+    "(Zr) Zirconium" = "Zr",
+    "(Nb) Niobium" = "Nb",
+    "(Mo) Molybdenum" = "Mo",
+    "(Tc) Technicium" = "Tc",
+    "(Ru) Ruthenium" = "Ru",
+    "(Rh) Rhodium" = "Rh",
+    "(Pd) Paladium" = "Pd",
+    "(Ag) Silver" = "Ag",
+    "(Cd) Cadmium" = "Cd",
+    "(In) Indium" = "In",
+    "(Sn) Tin" = "Sn",
+    "(Sb) Antimony" = "Sb",
+    "(Te) Tellerium" = "Te",
+    "(I) Iodine" = "I",
+    "(Xe) Xenon" = "Xe",
+    "(Cs) Cesium" = "Cs",
+    "(Ba) Barium" = "Ba",
+    "(Ce) Cerium" = "Ce",
+    "(Pr) Praeseodymeum" = "Pr",
+    "(Nd) Neodymeum" = "Nd",
+    "(Pr) Promethium" = "Pr",
+    "(Sm) Samarium" = "Sm",
+    "(Eu) Europium" = "Eu",
+    "(Gd) Gadolinium" = "Gd",
+    "(Tb) Terbium" = "Tb",
+    "(Dy) Dysprosium" = "Dy",
+    "(Ho) Holmium" = "Ho",
+    "(Er) Erbium" = "Er",
+    "(Tm) Thullium" = "Tm",
+    "(Yb) Ytterbium" = "Yb",
+    "(Lu) Lutetium" = "Lu",
+    "(Hf) Halfnium" = "Hf",
+    "(Ta) Tantalum" = "Ta",
+    "(W)  Tungsten" = "W",
+    "(Re) Rhenium" = "Re",
+    "(Os) Osmium" = "Os",
+    "(Ir) Irridium" = "Ir",
+    "(Pt) Platinum" = "Pt",
+    "(Au) Gold" = "Au",
+    "(Tl) Thallium" = "Tl",
+    "(Pb) Lead" = "Pb",
+    "(Bi) Bismuth" = "Bi",
+    "(Po) Polonium" = "Po",
+    "(At) Astatine" = "At",
+    "(Rn) Radon" = "Rn",
+    "(Fr) Francium" = "Fr",
+    "(Ra) Radium" = "Ra",
+    "(Ac) Actinum" = "Ac",
+    "(Th) Thorium" = "Th",
+    "(Pa) Proactinum" = "Pa",
+    "(U)  Uranium" = "U"),
+    selected=strsplit(x=input$calcurveelement, split="\\.")[[1]][1])
+    
+})
+
+
+
+# Return the requested dataset
+datasetInputVar <- reactive({
+    switch(input$elementvar,
+    "H" = H.table,
+    "He" = He.table,
+    "Li" = Li.table,
+    "Be" = Be.table,
+    "B" = B.table,
+    "C" = C.table,
+    "N" = N.table,
+    "O" = O.table,
+    "F" = F.table,
+    "Ne" = Ne.table,
+    "Na" = Na.table,
+    "Mg" = Mg.table,
+    "Al" = Al.table,
+    "Si" = Si.table,
+    "P" = P.table,
+    "S" = S.table,
+    "Cl" = Cl.table,
+    "Ar" = Ar.table,
+    "K" = K.table,
+    "Ca" = Ca.table,
+    "Sc" = Sc.table,
+    "Ti" = Ti.table,
+    "V" = V.table,
+    "Cr" = Cr.table,
+    "Mn" = Mn.table,
+    "Fe" = Fe.table,
+    "Co" = Co.table,
+    "Ni" = Ni.table,
+    "Cu" = Cu.table,
+    "Zn" = Zn.table,
+    "Ga" = Ga.table,
+    "Ge" = Ge.table,
+    "As" = As.table,
+    "Se" = Se.table,
+    "Br" = Br.table,
+    "Kr" = Kr.table,
+    "Rb" = Rb.table,
+    "Sr" = Sr.table,
+    "Y" = Y.table,
+    "Zr" = Zr.table,
+    "Nb" = Nb.table,
+    "Mo" = Mo.table,
+    "Tc" = Tc.table,
+    "Ru" = Ru.table,
+    "Rh" = Rh.table,
+    "Pd" = Pd.table,
+    "Ag" = Ag.table,
+    "Cd" = Cd.table,
+    "In" = In.table,
+    "Sn" = Sn.table,
+    "Sb" = Sb.table,
+    "Te" = Te.table,
+    "I" = I.table,
+    "Xe" = Xe.table,
+    "Cs" = Cs.table,
+    "Ba" = Ba.table,
+    "La" = La.table,
+    "Ce" = Ce.table,
+    "Pr" = Pr.table,
+    "Nd" = Nd.table,
+    "Pm" = Pm.table,
+    "Sm" = Sm.table,
+    "Eu" = Eu.table,
+    "Gd" = Gd.table,
+    "Tb" = Tb.table,
+    "Dy" = Dy.table,
+    "Ho" = Ho.table,
+    "Er" = Er.table,
+    "Tm" = Tm.table,
+    "Yb" = Yb.table,
+    "Lu" = Lu.table,
+    "Hf" = Hf.table,
+    "Ta" = Ta.table,
+    "W" = W.table,
+    "Re" = Re.table,
+    "Os" = Os.table,
+    "Ir" = Ir.table,
+    "Pt" = Pt.table,
+    "Au" = Au.table,
+    "Hg" = Hg.table,
+    "Tl" = Tl.table,
+    "Pb" = Pb.table,
+    "Bi" = Bi.table,
+    "Po" = Po.table,
+    "At" = At.table,
+    "Rn" = Rn.table,
+    "Fr" = Fr.table,
+    "Ra" = Ra.table,
+    "Ac" = Ac.table,
+    "Th" = Th.table,
+    "Pa" = Pa.table,
+    "U" = U.table)
+})
+
+
 output$importanceplot <- renderPlot({
     
     variablesPlot()
@@ -658,41 +919,45 @@ output$importanceplot <- renderPlot({
 
 
 output$hover_info_variable <- renderUI({
-    
-    point.table <- importanceFrame()
-    
-    hover <- input$plot_hover_variable
-    point <- nearPoints(point.table,  coordinfo=hover,   threshold = 5, maxpoints = 1, addDist = TRUE)
-    if (nrow(point) == 0) return(NULL)
-    
-    # calculate point position INSIDE the image as percent of total dimensions
-    # from left (horizontal) and from top (vertical)
-    left_pct <- (hover$x - hover$domain$left) / (hover$domain$right - hover$domain$left)
-    top_pct <- (hover$domain$top - hover$y) / (hover$domain$top - hover$domain$bottom)
-    
-    # calculate distance from left and bottom side of the picture in pixels
-    left_px <- hover$range$left + left_pct * (hover$range$right - hover$range$left)
-    top_px <- hover$range$top + top_pct * (hover$range$bottom - hover$range$top)
-    
-    
-    # create style property fot tooltip
-    # background color is set so tooltip is a bit transparent
-    # z-index is set so we are sure are tooltip will be on top
-    style <- paste0("position:absolute; z-index:100; background-color: rgba(245, 245, 245, 0.85); ",
-    "left:", left_px + 2, "px; top:", top_px + 2, "px;")
-    
-    # actual tooltip created as wellPanel
-    wellPanel(
-    style = style,
-    p(HTML(paste0("Energy:", " ", round(point$Energy, 0)))),
-    p(HTML(paste0("NodePurity:", " ", round(point$NodePurity, 1))))
-    )
+    if(calType()==5){
+        
+        point.table <- importanceFrame()
+        
+        hover <- input$plot_hover_variable
+        point <- nearPoints(point.table,  coordinfo=hover,   threshold = 5, maxpoints = 1, addDist = TRUE)
+        if (nrow(point) == 0) return(NULL)
+        
+        # calculate point position INSIDE the image as percent of total dimensions
+        # from left (horizontal) and from top (vertical)
+        left_pct <- (hover$x - hover$domain$left) / (hover$domain$right - hover$domain$left)
+        top_pct <- (hover$domain$top - hover$y) / (hover$domain$top - hover$domain$bottom)
+        
+        # calculate distance from left and bottom side of the picture in pixels
+        left_px <- hover$range$left + left_pct * (hover$range$right - hover$range$left)
+        top_px <- hover$range$top + top_pct * (hover$range$bottom - hover$range$top)
+        
+        
+        # create style property fot tooltip
+        # background color is set so tooltip is a bit transparent
+        # z-index is set so we are sure are tooltip will be on top
+        style <- paste0("position:absolute; z-index:100; background-color: rgba(245, 245, 245, 0.85); ",
+        "left:", left_px + 2, "px; top:", top_px + 2, "px;")
+        
+        # actual tooltip created as wellPanel
+        wellPanel(
+        style = style,
+        p(HTML(paste0("Energy:", " ", round(point$Energy, 2)))),
+        p(HTML(paste0("NodePurity:", " ", round(point$NodePurity, 1))))
+        )
+    } else if(calType()!=5){
+        NULL
+    }
 })
 
 output$variablePlot <- downloadHandler(
-filename = function() { paste0(input$projectname, '_Variables', '.jpg', sep='') },
+filename = function() { paste0(input$calname, "_", input$calcurveelement, '_Variables', '.tiff', sep='') },
 content = function(file) {
-    ggsave(file,variablesPlot(), width=14, height=8, device="jpeg")
+    ggsave(file,variablesPlot(), width=14, height=8, device="tiff", compression="lzw", type="cairo", dpi=300)
 }
 )
 
@@ -703,7 +968,7 @@ fishVector <- reactive({
         
         so <- seq(from=2, to=input$nvariables, by=1)
         
-        long <- pblapply(so, function(x) gRbase::combnPrim(x=a.vector, m=x), cl=6L)
+        long <- pblapply(so, function(x) combnPrim(x=a.vector, m=x), cl=6L)
         and <- pblapply(long, function(x) plyr::alply(x, 2), cl=6L)
         thanks.for.all.the.fish <- do.call(list, unlist(and, recursive=FALSE))
         thanks.for.all.the.fish <- pblapply(thanks.for.all.the.fish, function(x) c(input$calcurveelement, x))
@@ -841,19 +1106,154 @@ calTypeSelectionPre <- reactive({
 
 
 
-bestCalType <- reactive({
+
+####Set up Standards
+elementHold <- reactive({
+    
+    if(is.null(input$calcurveelement)==TRUE){
+        ls(dataHold())[1]
+    } else if(!is.null(input$calcurveelement)==TRUE){
+        input$calcurveelement
+    }
+    
+})
+
+
+
+
+calFileStandards <- reactive({
+    
+    
+    
+    if(calFileIsTRUE==TRUE && is.null(calList[[elementHold()]])==TRUE && is.null(calFileContents()$calList[[elementHold()]])==FALSE){
+        calFileContents()$calList[[elementHold()]][[1]][[4]]
+    } else if(calFileIsTRUE==FALSE && is.null(calList[[elementHold()]])==TRUE && is.null(calFileContents()$calList[[elementHold()]])==TRUE){
+        rep(TRUE, dataCount())
+    } else if(calFileIsTRUE==TRUE && is.null(calList[[elementHold()]])==FALSE && is.null(calFileContents()$calList[[elementHold()]])==TRUE){
+        calList[[elementHold()]][[1]][[4]]
+    } else if(calFileIsTRUE==TRUE && is.null(calList[[elementHold()]])==FALSE && is.null(calFileContents()$calList[[elementHold()]])==FALSE){
+        calList[[elementHold()]][[1]][[4]]
+    } else if(calFileIsTRUE==FALSE && is.null(calList[[elementHold()]])==FALSE && is.null(calFileContents()$calList[[elementHold()]])==TRUE){
+        calList[[elementHold()]][[1]][[4]]
+    } else if(calFileIsTRUE==FALSE && is.null(calList[[elementHold()]])==FALSE && is.null(calFileContents()$calList[[elementHold()]])==FALSE){
+        calList[[elementHold()]][[1]][[4]]
+    } else if(calFileIsTRUE==TRUE && is.null(calList[[elementHold()]])==TRUE && is.null(calFileContents()$calList[[elementHold()]])==TRUE){
+        rep(TRUE, dataCount())
+    }
+    
+    
+    
+    
+})
+
+
+
+
+vals <- reactiveValues()
+
+
+vals$keeprows <- if(calFileIsTRUE==TRUE){
+    calFileStandards()
+}else{
+    rep(TRUE, dataCount())
+}
+
+#####Machine Learning: Cal Type
+
+
+calTypeSelectionPre <- reactive({
+    
+    hold <- values[["DF"]]
+    
+    optionhold <- if(is.null(input$calcurveelement)){
+        ls(hold)[2]
+    }else{
+        input$calcurveelement
+    }
+    
+    if(calFileIsTRUE==FALSE && is.null(calList[[optionhold]])==TRUE){
+        calConditons[["CalTable"]][["CalType"]]
+    } else if(calFileIsTRUE==TRUE && is.null(calList[[optionhold]])==TRUE && is.null(calFileContents()$calList[[optionhold]])==FALSE){
+        calFileContents()$calList[[optionhold]][[1]]$CalTable$CalType
+    } else if(calFileIsTRUE==FALSE && is.null(calList[[optionhold]])==FALSE){
+        calList[[optionhold]][[1]]$CalTable$CalType
+    } else if(calFileIsTRUE==TRUE && is.null(calList[[optionhold]])==FALSE){
+        calList[[optionhold]][[1]]$CalTable$CalType
+    } else if(calFileIsTRUE==TRUE && is.null(calList[[optionhold]])==TRUE && is.null(calFileContents()$calList[[optionhold]])==TRUE){
+        calConditons[["CalTable"]][["CalType"]]
+    }
+    
+})
+
+
+predictIntensitySimp <- reactive({
+    
+    concentration.table <- concentrationTable()
+    data <- dataNorm()
+    spectra.line.table <- spectraLineTable()
+    
+    if(input$normcal==1){
+        if(dataType()=="Spectra"){
+            general_prep_xrf(spectra.line.table=spectra.line.table, element.line=input$calcurveelement)
+        } else if(dataType()=="Net"){
+            general_prep_xrf_net(spectra.line.table=spectra.line.table, element.line=input$calcurveelement)
+        }
+    } else if(input$normcal==2){
+        predict.intensity <- if(dataType()=="Spectra"){
+            simple_tc_prep_xrf(data=data, spectra.line.table=spectra.line.table, element.line=input$calcurveelement)
+        } else if(dataType()=="Net"){
+            simple_tc_prep_xrf_net(data=data, spectra.line.table=spectra.line.table, element.line=input$calcurveelement)
+        }
+    } else if(input$normcal==3){
+        predict.intensity <- if(dataType()=="Spectra"){
+            simple_comp_prep_xrf(data=data, spectra.line.table=spectra.line.table, element.line=input$calcurveelement, norm.min=input$comptonmin, norm.max=input$comptonmax)
+        } else if(dataType()=="Net"){
+            simple_comp_prep_xrf_net(data=data, spectra.line.table=spectra.line.table, element.line=input$calcurveelement, norm.min=input$comptonmin, norm.max=input$comptonmax)
+        }
+    }
+    
+})
+
+
+predictFrameSimp <- reactive({
+    
+    concentration.table <- concentrationTable()
+    data <- dataNorm()
+    spectra.line.table <- spectraLineTable()
+    
+    predict.intensity.simp <- predictIntensitySimp()
+    
+    predict.frame.simp <- data.frame(predict.intensity.simp, concentration.table[,input$calcurveelement])
+    predict.frame.simp <- predict.frame.simp[complete.cases(predict.frame.simp),]
+    predict.frame.simp <- predict.frame.simp[vals$keeprows,]
+    colnames(predict.frame.simp) <- c(names(predict.intensity.simp), "Concentration")
+    predict.frame.simp <- predict.frame.simp[complete.cases(predict.frame.simp$Concentration),]
+    
+    predict.frame.simp
+    
+})
+
+simpleLinearModel <- reactive({
+    
+    lm(Concentration~Intensity, data=predictFrameSimp(), na.action=na.exclude)
+    
+    
+})
+
+nonLinearModel <- reactive({
+    
+    lm(Concentration~Intensity + I(Intensity^2), data=predictFrameSimp(), na.action=na.exclude)
+    
+})
+
+predictIntensityForest <- reactive({
     
     concentration.table <- concentrationTable()
     data <- dataNorm()
     spectra.line.table <- spectraLineTable()
     
     
-    #concentration.table <- concentration.table[complete.cases(concentration.table[, input$calcurveelement]),]
-    
-    #spectra.line.table <- spectra.line.table[complete.cases(concentration.table[, input$calcurveelement]),]
-    #data2 <- data[data$Spectrum %in% concentration.table$Spectrum, ]
-    
-    predict.intensity <- if(input$normcal==1){
+    if(input$normcal==1){
         if(dataType()=="Spectra"){
             lucas_simp_prep_xrf(spectra.line.table=spectra.line.table, element.line=input$calcurveelement, slope.element.lines=elementallinestouse(), intercept.element.lines=input$intercept_vars)
         } else if(dataType()=="Net"){
@@ -873,68 +1273,193 @@ bestCalType <- reactive({
         }
     }
     
-    if(input$normcal==1){
-        spectra.data <- if(dataType()=="Spectra"){
+    
+})
+
+
+predictFrameForest <- reactive({
+    
+    concentration.table <- concentrationTable()
+    data <- dataNorm()
+    spectra.line.table <- spectraLineTable()
+    
+    
+    predict.intensity.forest <- predictIntensityForest()
+    
+    predict.frame.forest <- data.frame(predict.intensity.forest, Concentration=concentration.table[,input$calcurveelement])
+    predict.frame.forest <- predict.frame.forest[complete.cases(predict.frame.forest),]
+    predict.frame.forest <- predict.frame.forest[vals$keeprows,]
+    predict.frame.forest <- predict.frame.forest[complete.cases(predict.frame.forest$Concentration),]
+    
+    predict.frame.forest
+    
+})
+
+forestModel <- reactive({
+    
+    randomForest(Concentration~., data=predictFrameForest(), na.action=na.omit, ntree=1000, nPerm=100)
+    
+})
+
+
+predictIntensityLuc <- reactive({
+    
+    
+    predictIntensityForest()[,c("Intensity", input$slope_vars)]
+    
+})
+
+predictFrameLuc <- reactive({
+    
+    concentration.table <- concentrationTable()
+    data <- dataNorm()
+    spectra.line.table <- spectraLineTable()
+    
+    
+    predict.intensity.luc <- predictIntensityLuc()
+    
+    predict.frame.luc <- data.frame(predict.intensity.luc, concentration.table[,input$calcurveelement])
+    predict.frame.luc <- predict.frame.luc[complete.cases(predict.frame.luc),]
+    predict.frame.luc <- predict.frame.luc[vals$keeprows,]
+    colnames(predict.frame.luc) <- c(names(predict.intensity.luc), "Concentration")
+    predict.frame.luc <- predict.frame.luc[complete.cases(predict.frame.luc$Concentration),]
+    
+    predict.frame.luc
+    
+})
+
+
+lucasToothModel <- reactive({
+    
+    lm(Concentration~., data=predictFrameLuc(), na.action=na.exclude)
+})
+
+
+rainforestData <- reactive({
+    
+    concentration.table <- concentrationTable()
+    data <- dataNorm()
+    spectra.line.table <- spectraLineTable()
+    
+    spectra.data <- if(input$normcal==1){
+        if(dataType()=="Spectra"){
             spectra_simp_prep_xrf(spectra=data)[,-1]
         } else if(dataType()=="Net"){
             NULL
         }
     } else if(input$normcal==2){
-        spectra.data <- if(dataType()=="Spectra"){
+        if(dataType()=="Spectra"){
             spectra_tc_prep_xrf(spectra=data)[,-1]
         } else if(dataType()=="Net"){
             NULL
         }
     } else if(input$normcal==3){
-        spectra.data <- if(dataType()=="Spectra"){
+        if(dataType()=="Spectra"){
             spectra_comp_prep_xrf(spectra=data, norm.min=input$comptonmin, norm.max=input$comptonmax)[,-1]
         } else if(dataType()=="Net"){
             NULL
         }
     }
     
-    
-    
-    predict.frame <- data.frame(predict.intensity, concentration.table[,input$calcurveelement])
-    predict.frame <- predict.frame[complete.cases(predict.frame),]
-    predict.frame <- predict.frame[vals$keeprows,]
-    colnames(predict.frame) <- c(names(predict.intensity), "Concentration")
-    predict.frame <- predict.frame[complete.cases(predict.frame$Concentration),]
-    
     spectra.data$Concentration <- concentration.table[complete.cases(concentration.table[,input$calcurveelement]),input$calcurveelement]
     spectra.data <- spectra.data[complete.cases(spectra.data$Concentration),]
     spectra.data <- spectra.data[vals$keeprows,]
     
+    spectra.data
     
-    predict.frame.simp <- predict.frame[,c("Concentration", "Intensity")]
-    predict.frame.luc <- predict.frame[, c("Concentration", "Intensity", input$slope_vars)]
-    predict.frame.forest <- predict.frame
-    predict.frame.rainforest <- spectra.data
+})
+
+
+rainforestModel <- reactive({
     
-    cal.lm.simp <- lm(Concentration~Intensity, data=predict.frame.simp, na.action=na.exclude)
-    lm.predict <- predict(cal.lm.simp, new.data=predict.frame.simp, proximity=FALSE)
-    lm.sum <- summary(lm(predict.frame$Concentration~lm.predict, na.action=na.exclude))
+    randomForest(Concentration~., data=rainforestData(), na.action=na.omit, ntree=1000, nPerm=100)
     
-    cal.lm.two <- lm(Concentration~Intensity + I(Intensity^2), data=predict.frame.simp, na.action=na.exclude)
-    lm2.predict <- predict(cal.lm.two, new.data=predict.frame.simp, proximity=FALSE)
-    lm2.sum <- summary(lm(predict.frame$Concentration~lm2.predict, na.action=na.exclude))
+})
+
+
+
+
+
+bestCalTypeFrame <- reactive({
     
-    cal.lm.luc <- lm(Concentration~., data=predict.frame.luc, na.action=na.exclude)
-    lucas.predict <- predict(cal.lm.luc, new.data=predict.frame.luc, proximity=FALSE)
-    lucas.sum <- summary(lm(predict.frame$Concentration~lucas.predict, na.action=na.exclude))
-    
-    cal.lm.forest <- randomForest(Concentration~., data=predict.frame.forest, na.action=na.omit)
-    forest.predict <- predict(cal.lm.forest, new.data=predict.frame.forest, proximity=FALSE)
-    forest.sum <- summary(lm(predict.frame$Concentration~forest.predict, na.action=na.exclude))
-    
-    cal.lm.rainforest <- randomForest(Concentration~., data=spectra.data, na.action=na.omit)
-    rainforest.predict <- predict(cal.lm.rainforest, new.data=predict.frame.rainforest, proximity=FALSE)
-    rainforest.sum <- summary(lm(predict.frame$Concentration~rainforest.predict, na.action=na.exclude))
+    concentration.table <- concentrationTable()
+    data <- dataNorm()
+    spectra.line.table <- spectraLineTable()
     
     
-    r2.slope.vector <- c(lm.sum$r.squared*lm.sum$coef[2], lm2.sum$r.squared*lm2.sum$coef[2], lucas.sum$r.squared*lucas.sum$coef[2], forest.sum$r.squared*forest.sum$coef[2], rainforest.sum$r.squared*rainforest.sum$coef[2])
+    #concentration.table <- concentration.table[complete.cases(concentration.table[, input$calcurveelement]),]
     
-    Closest(r2.slope.vector, 1, which=TRUE)
+    #spectra.line.table <- spectra.line.table[complete.cases(concentration.table[, input$calcurveelement]),]
+    #data2 <- data[data$Spectrum %in% concentration.table$Spectrum, ]
+    
+    predict.intensity.simp <- predictIntensitySimp()
+    
+    predict.intensity.luc <- predictIntensityLuc()
+    
+    predict.intensity.forest <- predictIntensityForest()
+    
+    spectra.data <- rainforestData()
+    spectra.data <- spectra.data[complete.cases(spectra.data),]
+    
+    spectra.data <- spectra.data[ , !(names(spectra.data) %in% "Concentration")]
+    
+    
+    
+    predict.frame.simp <- predictFrameSimp()
+    predict.frame.forest <- predictFrameForest()
+    predict.frame.luc <- predictFrameLuc()
+    predict.frame.rainforest <- rainforestData()
+    
+    cal.lm.simp <- simpleLinearModel()
+    lm.predict <- predict(cal.lm.simp, newdata=predict.frame.simp)
+    lm.sum <- summary(lm(predict.frame.simp$Concentration~lm.predict, na.action=na.exclude))
+    
+    cal.lm.two <- nonLinearModel()
+    lm2.predict <- predict(cal.lm.two, newdata=predict.frame.simp)
+    lm2.sum <- summary(lm(predict.frame.simp$Concentration~lm2.predict, na.action=na.exclude))
+    
+    cal.lm.luc <- lucasToothModel()
+    lucas.predict <- predict(cal.lm.luc, newdata=predict.frame.luc)
+    lucas.sum <- summary(lm(predict.frame.luc$Concentration~lucas.predict, na.action=na.exclude))
+    
+    cal.lm.forest <- forestModel()
+    forest.predict <- predict(cal.lm.forest, newdata=predict.frame.forest)
+    forest.sum <- summary(lm(predict.frame.forest$Concentration~forest.predict, na.action=na.exclude))
+    
+    cal.lm.rainforest <- rainforestModel()
+    rainforest.predict <- predict(cal.lm.rainforest, newdata=predict.frame.rainforest)
+    rainforest.sum <- summary(lm(predict.frame.rainforest$Concentration~rainforest.predict, na.action=na.exclude))
+    
+    
+    model.frame <- data.frame(Model = c("Linear", "Non-Linear", "Lucas-Tooth", "Forest", "Rainforest"),
+    valSlope = round(c(lm.sum$coef[2], lm2.sum$coef[2], lucas.sum$coef[2], forest.sum$coef[2], rainforest.sum$coef[2]), 2),
+    R2 = round(c(lm.sum$adj.r.squared, lm2.sum$adj.r.squared, lucas.sum$adj.r.squared, forest.sum$adj.r.squared, rainforest.sum$adj.r.squared), 2),
+    Score = round(c(lm.sum$adj.r.squared*lm.sum$coef[2], lm2.sum$adj.r.squared*lm2.sum$coef[2], lucas.sum$adj.r.squared*lucas.sum$coef[2], forest.sum$adj.r.squared*forest.sum$coef[2], rainforest.sum$adj.r.squared*rainforest.sum$coef[2]), 2),
+    Rank = round(abs(1-c(lm.sum$adj.r.squared*lm.sum$coef[2], lm2.sum$adj.r.squared*lm2.sum$coef[2], lucas.sum$adj.r.squared*lucas.sum$coef[2], forest.sum$adj.r.squared*forest.sum$coef[2], rainforest.sum$adj.r.squared*rainforest.sum$coef[2])), 2),
+    Code=c(1, 2, 3, 4, 5))
+    
+    
+    model.frame <- model.frame %>%  arrange(Rank)
+    
+    #model.frame[order(model.frame, model.frame$Rank),]
+    model.frame
+    
+})
+
+
+bestCalType <- reactive({
+    
+    model.frame <- bestCalTypeFrame()
+    
+    model.frame <- subset(model.frame, !(model.frame$valSlope < 0.8 | model.frame$valSlope > 1.2))
+    model.frame[Closest(model.frame$Score, 1, which=TRUE),6]
+    
+})
+
+
+output$models <- renderDataTable({
+    
+    bestCalTypeFrame()
     
 })
 
@@ -1763,35 +2288,36 @@ dataType <- reactive({
   })
   
   
-  elementModelRandom <- reactive({
-      
-      predict.frame <- calCurveFrameRandomized()
-      
-      
-      if (input$radiocal==1){
-          cal.lm <- lm(Concentration~Intensity, data=predict.frame)
-      }
-      
-      
-      if (input$radiocal==2){
-          cal.lm <- lm(Concentration~Intensity + I(Intensity^2), data=predict.frame)
-      }
-      
-      if (input$radiocal==3){
-          cal.lm <- lm(Concentration~., data=predict.frame)
-      }
-      
-      if (input$radiocal==4){
-          cal.lm <- randomForest(Concentration~., data=predict.frame, na.action=na.omit)
-      }
-      
-      if (input$radiocal==5){
-          cal.lm <- randomForest(Concentration~., data=predict.frame, na.action=na.omit)
-      }
-      
-      cal.lm
-      
-  })
+
+elementModelRandom <- reactive({
+    
+    predict.frame <- calCurveFrameRandomized()
+    
+    
+    if (input$radiocal==1){
+        cal.lm <- lm(Concentration~Intensity, data=predict.frame)
+    }
+    
+    
+    if (input$radiocal==2){
+        cal.lm <- lm(Concentration~Intensity + I(Intensity^2), data=predict.frame)
+    }
+    
+    if (input$radiocal==3){
+        cal.lm <- lm(Concentration~., data=predict.frame)
+    }
+    
+    if (input$radiocal==4){
+        cal.lm <- randomForest(Concentration~., data=predict.frame, na.action=na.omit)
+    }
+    
+    if (input$radiocal==5){
+        cal.lm <- randomForest(Concentration~., data=predict.frame, na.action=na.omit)
+    }
+    
+    cal.lm
+    
+})
   
   
   valFrameRandomized <- reactive({

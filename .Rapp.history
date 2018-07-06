@@ -1,502 +1,367 @@
-cal.mode.list <- list(cal.table, slope.corrections, intercept.corrections, standards.used)
-intercept.corrections <- Null
-intercept.corrections <- NULL
-cal.mode.list <- list(cal.table, slope.corrections, intercept.corrections, standards.used)
-names(cal.mode.list) <- c("CalTable", "Slope", "Intercept", "StandardsUsed")
-cal.mode.list[[1]][[3]]
-cal.mode.list[[1]][[4]]
-ls(cal.mode.list)
-ls(cal.mode.list[[1]])
-shiny::runApp("~/GitHub/CloudCal")
-?predict
-shiny::runApp("~/GitHub/CloudCal")
-1/5 * 5
-update.packages(ask=FALSE)
-shiny::runApp("~/GitHub/CloudCal-Training")
-shiny::runApp("~/GitHub/CloudCal")
-shiny::runApp("~/GitHub/CloudCal-Training")
-shiny::runApp("~/GitHub/cloudFTIR")
-choice.lines <- data.frame(Name=c("test", "test2"), WaveMin=c(1000, 1300), WaveMax=c("1200", "1400"))
-choice.list <- split(choice.lines[,"Name"])
-choice.lines
-?split
-choice.list <- split(choice.lines, f=Name)
-choice.list <- split(choice.lines, f=choice.lines$Name)
-choice.list
-names(choice.list) <- choice.lines[,"Name"]
-choice.list
-choice.lines <- data.frame(Name=c("test", "test2"), WaveMin=c(1000, 1300), WaveMax=c("1200", "1400"))
-shiny::runApp("~/GitHub/cloudFTIR")
-spectra.data <-read.csv(file="~/Downloads/myFTIR_Raw.csv")
-choice.lines <- data.frame(Name=c("test", "test2", "test3"), WaveMin=c(1000, 1300, 1500), WaveMax=c(1200, 1400, 1600))
-choice.lines <- choice.lines[complete.cases(choice.lines),]
-choice.lines
-choice.list <- split(choice.lines, f=choice.lines$Name)#
-        names(choice.list) <- choice.lines[,"Name"]#
-        index <- choice.lines[,"Name"]
-range_subset <- function(range.frame, data){#
-            new.data <- subset(data, Wavelength %in% c(range.frame$WaveMin, range.frame$WaveMax))#
-            data.frame(#
-                Line=range.frame$Name,#
-                Wavenumber=mean(range.frame$WaveMin, range.frame$WaveMax),#
-                Sigma = sd(range.frame$WaveMin, range.frame$WaveMax),#
-                Amplitude=sum(new.data$Amplitude)#
-            )#
-                    }
-selected.list <- lapply(index, function(x) range_subset(range.frame=choice.list[[x]], data=spectra.data))
-result <-             do.call("rbind", selected.list)
-result
-range.frame <- choice.list[[1]]
-range.frame
-data <- spectra.data
-length(data)
-length(data[,1])
-new.data <- subset(data, Wavelength %in% c(range.frame$WaveMin, range.frame$WaveMax))
-length(new.data[,1])
-range.frame$WaveMin
-range.frame$WaveMax
-new.data <- filter(data) Wavelength %in% c(range.frame$WaveMin, range.frame$WaveMax))
-new.data <- filter(data) %>% Wavelength %in% c(range.frame$WaveMin, range.frame$WaveMax)
-new.data <- subset(data, Wavelength >= range.frame$WaveMin & Wavelength <= range.frame$WaveMax)
-length(new.data[,1])
-head(new.data)
-test <- table(new.data)
-test
-update.packages(ask=FALSE)
-spectra.data <-read.csv(file="~/Downloads/myFTIR_Raw.csv")
-choice.lines <- choice.lines[complete.cases(choice.lines),]
-choice.lines <- data.frame(Name=c("test", "test2", "test3"), WaveMin=c(1000, 1300, 1500), WaveMax=c(1200, 1400, 1600))
-choice.list <- split(choice.lines, f=choice.lines$Name)#
-        names(choice.list) <- choice.lines[,"Name"]#
-        index <- choice.lines[,"Name"]
-?subset
-range.frame <- choice.list[[1]]
-data <- spectra.data
-new.data <- subset(data, Wavelength >= range.frame$WaveMin & Wavelength <= range.frame$WaveMax, drop=TRUE)
-head(new.data)
-head(new.data$Spectrum)
-new.data <- subset(data, Wavelength >= range.frame$WaveMin & Wavelength <= range.frame$WaveMax, drop=FALSE)
-head(new.data$Spectrum)
-new.data <- droplevels(new.data)
-head(new.data$Spectrum)
-head(new.data$Wavelength)
-new.data <- subset(data, Wavelength >= range.frame$WaveMin & Wavelength <= range.frame$WaveMax, drop=TRUE)
-head(new.data$Wavelength)
-test <- table(new.data)
-length(test[,1])
-length(test)
-newer.data <- aggregate(new.data, by=list(Spectrum), FUN=mean, na.rm=TRUE)
-newer.data <- aggregate(new.data, by=list(new.data$Spectrum), FUN=mean, na.rm=TRUE)
-length(newer.data[,1])
-newer.data
-newer.data <- aggregate(new.data, by=list(new.data$Spectrum), FUN=mean, na.rm=TRUE)[,c("Group.1", "Wavelength", "Amplitude")]
-newer.data
-colnames(newer.data)[1] <- "Spectrum"
-newer.data
-range_subset <- function(range.frame, data){#
-            new.data <- subset(data, Wavelength >= range.frame$WaveMin & Wavelength <= range.frame$WaveMax, drop=TRUE)#
-            newer.data <- aggregate(new.data, by=list(new.data$Spectrum), FUN=mean, na.rm=TRUE)[,c("Group.1", "Wavelength", "Amplitude")]#
-            colnames(newer.data)[1] <- "Spectrum"#
-            newer.data#
-        }
-selected.list <- lapply(index, function(x) range_subset(range.frame=choice.list[[x]], data=spectra.data))
-test <-             do.call("cbind", selected.list)
-test
-range_subset <- function(range.frame, data){#
-            new.data <- subset(data, Wavelength >= range.frame$WaveMin & Wavelength <= range.frame$WaveMax, drop=TRUE)#
-            newer.data <- aggregate(new.data, by=list(new.data$Spectrum), FUN=mean, na.rm=TRUE)[,c("Group.1", "Amplitude")]#
-            colnames(newer.data) <- c("Spectrum", range.frame$Name)#
-            newer.data#
-        }
-selected.list <- lapply(index, function(x) range_subset(range.frame=choice.list[[x]], data=spectra.data))#
-            do.call("cbind", selected.list)
-merged.data.frame = Reduce(function(...) merge(..., all=T), selected.list)
-merged.data.frame
-range.frame
-range.frame$Name
-as.character(range.frame$Name)
-range_subset <- function(range.frame, data){#
-            new.data <- subset(data, Wavelength >= range.frame$WaveMin & Wavelength <= range.frame$WaveMax, drop=TRUE)#
-            newer.data <- aggregate(new.data, by=list(new.data$Spectrum), FUN=mean, na.rm=TRUE)[,c("Group.1", "Amplitude")]#
-            colnames(newer.data) <- c("Spectrum", as.character(range.frame$Name))#
-            newer.data#
-        }
-selected.list <- lapply(index, function(x) range_subset(range.frame=choice.list[[x]], data=spectra.data))#
-            merged.data.frame = Reduce(function(...) merge(..., all=T), selected.list)
-merged.data.frame
-shiny::runApp("~/GitHub/cloudFTIR")
-update.packages(ask=FALSE)
-stuff <- readRDS("~/Desktop/firstFull.quant")
-ls(stuff)
-data <- stuff[["Spectra"]]
-head(data)
-test <- reshape2::dcast(data, Wavenumber~Spectrum)
-head(test)
-test <- reshape2::dcast(data, Spectrum~Wavenumber, value=Amplitude)
-test <- reshape2::dcast(data, Spectrum~Wavenumber, value.var=Amplitude)
-test <- reshape2::dcast(data, Spectrum~Wavenumber)
-length(test)
-head(test[,1:7])
-test$Concentration <- c(1, 2, 3, 4, 5, 6, 7)
-library(caret)#
-library(ggplot2)#
-#library(doMC)#
-library(randomForest)#
-#registerDoMC(cores=4)#
-library(MCMCpack)
-# prepare simple test suite#
-control <- trainControl(method="cv", number=5)#
-seed <- 7#
-metric <- "RMSE"
-set.seed(seed)
-rainforest.model <- randomForest(Concentration~., data=test, importance=TRUE, ntrees=500)
-colnames(test) <- make.names(colnames(test))
-head(test[,1:7])
-rainforest.model <- randomForest(Concentration~., data=test, importance=TRUE, ntrees=500)
-rainforest.model <- randomForest(Concentration~., data=test, importance=TRUE, ntrees=500, method="lm")
-test <- apply(test, 2, as.numeric)
-rainforest.model <- randomForest(Concentration~., data=test, importance=TRUE, ntrees=500)
-head(test[,1:7])
-test <- reshape2::dcast(data, Spectrum~Wavenumber)
-stuff <- readRDS("~/Desktop/firstFull.quant")#
-data <- stuff[["Spectra"]]#
+merge.list <- pbapply::pblapply(index, function(x) merge_spectra(ftir.data=subset(ftir.table, Spectrum==fileframe[x,2]), xrf.data=subset(xrf.table, Spectrum=fileframe[x,1]), energy.range=c(0,1)))
+head(merge.list[[1]])
+merged.spectra <- merge.list[[1]]
+merged.plot <- ggplot(merged.spectra) +#
+geom_line(aes(Energy, CPS)) +#
+theme_light() +#
+scale_x_log10() +#
+scale_y_log10()#
+merged.plot
+library(ggplot2)
+merged.plot <- ggplot(merged.spectra) +#
+geom_line(aes(Energy, CPS)) +#
+theme_light() +#
+scale_x_log10() +#
+scale_y_log10()#
+merged.plot
+head(fileframe)
+fileframe <- data.frame(XRFData=unique(xrf.cal[["Spectra"]]["Spectrum"])[2:121,], FTIRData=unique(ftir.cal[["Spectra"]]["Spectrum"]), stringsAsFactors = FALSE)#
+fileframe[,] <- lapply(fileframe, function(x) type.convert(as.character(x), as.is = TRUE))
+head(fileframe)
+rownames(fileframe) <- NULL
+head(fileframe)
+fileframe <- data.frame(XRFData=unique(xrf.cal[["Spectra"]]["Spectrum"])[2:121,], FTIRData=unique(ftir.cal[["Spectra"]]["Spectrum"]), stringsAsFactors = FALSE)
+head(fileframe)
+fileframe <- data.frame(XRFData=unique(xrf.cal[["Spectra"]]["Spectrum"])[2:121,], FTIRData=unique(ftir.cal[["Spectra"]]["Spectrum"]))
+head(fileframe)
+fileframe <- data.frame(XRFData=unique(xrf.cal[["Spectra"]]["Spectrum"][2:121,]), FTIRData=unique(ftir.cal[["Spectra"]]["Spectrum"]))
+head(fileframe)
+fileframe <- data.frame(XRFData=unique(xrf.cal[["Spectra"]]["Spectrum"][2:121,]), FTIRData=unique(ftir.cal[["Spectra"]]["Spectrum"]))#
+fileframe[,] <- lapply(fileframe, function(x) type.convert(as.character(x), as.is = TRUE))#
+colnames(fileframe) <- c("XRFData", "FTIRData")#
+rownames(fileframe) <- NULL
+head(fileframe)
+index <- seq(1, length(fileframe[,1]), 1)#
 #
-test <- reshape2::dcast(data, Spectrum~Wavenumber)#
-test$Concentration <- c(1, 2, 3, 4, 5, 6, 7)
-rainforest.model <- randomForest(Concentration~., data=test[,-1], importance=TRUE, ntrees=500)
-colnames(test) <- make.names(colnames(test))
-rainforest.model <- randomForest(Concentration~., data=test[,-1], importance=TRUE, ntrees=500)
-plot(rainforest.model)
-rainforest.predict <- predict(rainforest.model, new.data=test[,-1], proximity=FALSE)
-plot(rainforest.predict~test$Concentration)
-?randomForest
-shiny::runApp("~/GitHub/cloudFTIR")
-?colSums
-xy.frame <- data.frame(x=c(1, 2, 3), y=c(4, 5, 6))
-test.vec <- c(10, 20, 30)
-xy.frame/test.vec
-update.packages(ask=FALSE)
-shiny::runApp("~/GitHub/CloudCal")
-spectra_frame <- function(spectra){#
-    data <- reshape2::dcast(spectra, Spectrum~Energy)#
-    #test <- apply(test, 2, as.numeric)#
-    colnames(data) <- make.names(colnames(data))#
-    data[complete.cases(data),]#
-}
-test <- readRDS("~/Desktop/USDEarthCalTrainBetter.quant")
-spectra <- test[["Spectra"]]
-head(spectra)
-testing <- spectra_frame(spectra)
-head(testing[15])
-testing <- spectra_frame(spectra, value.var="CPS")
-testing <- spectra_frame(spectra, value.var=CPS)
-?dcast
-spectra_frame <- function(spectra){#
-    data <- reshape2::dcast(spectra, Spectrum~Energy, value.var="CPS")#
-    #test <- apply(test, 2, as.numeric)#
-    colnames(data) <- make.names(colnames(data))#
-    data[complete.cases(data),]#
-}
-testing <- spectra_frame(spectra)
-head(testing[,1:5])
-tail(testing[,1:5])
-shiny::runApp("~/GitHub/CloudCal")
-test <- readRDS("~/Desktop/USDEarthCalTrainBetter.quant")
-spectra <- test[["Spectra"]]
-spectra.simp.prep <- function(spectra){#
-    data <- reshape2::dcast(spectra, Spectrum~Energy, value.var="CPS")#
-    #test <- apply(test, 2, as.numeric)#
-    colnames(data) <- make.names(colnames(data))#
-    as.data.frame(data[complete.cases(data),])#
-}
-testing1 <- spectra.simp.prep(spectra)
-write.csv(testing1, "testing1.csv")
-testing2 <- spectra.tc.prep(spectra)
-write.csv(testing2, "testing2.csv")
-spectra.tc.prep <- function(spectra){#
-    data <- reshape2::dcast(spectra, Spectrum~Energy, value.var="CPS")#
-    #test <- apply(test, 2, as.numeric)#
-    colnames(data) <- make.names(colnames(data))#
-    data <- data[complete.cases(data),]#
-    total.counts <- colSums(data[,-1], na.rm=TRUE)#
-    data.frame(Spectrum=data$Spectrum, data[,-1]/total.counts)#
-}
-testing2 <- spectra.tc.prep(spectra)
-write.csv(testing2, "testing2.csv")
-spectra.comp.prep <- function(spectra, norm.min, norm.max){#
-    compton.norm <- subset(spectra$CPS, !(spectra$Energy < norm.min | spectra$Energy > norm.max))#
-    compton.file <- subset(spectra$Spectrum, !(spectra$Energy < norm.min | spectra$Energy > norm.max))#
-    compton.frame <- data.frame(is.0(compton.norm, compton.file))#
-    colnames(compton.frame) <- c("Compton", "Spectrum")#
-    compton.frame.ag <- aggregate(list(compton.frame$Compton), by=list(compton.frame$Spectrum), FUN="sum")#
-    colnames(compton.frame.ag) <- c("Spectrum", "Compton")#
-    data <- reshape2::dcast(spectra, Spectrum~Energy, value.var="CPS")#
-    #test <- apply(test, 2, as.numeric)#
-    colnames(data) <- make.names(colnames(data))#
-    data <- data.frame(Spectrum=data$Spectrum, data[,-1]/compton.frame.ag$Compton)#
-    data[complete.cases(data),]#
-}
-testing3 <- spectra.comp.prep(spectra, norrm.min=18.4, norm.max=19.4)
-testing3 <- spectra.comp.prep(spectra, norm.min=18.4, norm.max=19.4)
-write.csv(testing3, "testing3.csv")
-shiny::runApp("~/GitHub/CloudCal")
-?trainControl
-?gsub
-?varImp
-testcal <- readRDS("~/Desktop/USDEarthCalTrain.quant")#
-#
-# prepare simple test suite#
-control <- trainControl(method="cv", number=5)#
-seed <- 7#
-metric <- "RMSE"#
-#
-# Linear regression#
-#
-cal.table <- data.frame(testcal[["Intensities"]], Concentration=testcal[["Values"]]$Fe.K.alpha)#
-set.seed(seed)#
-fit.lm <- train(Concentration~., data=cal.table, method="lm", metric=metric, preProc=c("center", "scale"), trControl=control)#
-importance <- varImp(fit.lm, scale=FALSE)#
-importance.frame <- as.data.frame(importance$importance)
-head(importance.frame)
-head(cal.table)
-rownames(importance.frame)
-shiny::runApp("~/GitHub/CloudCal")
-test <- X5.02
-test <- "X5.02"
-gsub("X", "", test)
-as.numeric(gsub("X", "", test))
-shiny::runApp("~/GitHub/CloudCal")
-forest.model <- randomForest(Concentration~Fe.K.alpha+., data=cal.table, importance=TRUE, ntrees=500)#
-forest.predict <- predict(forest.model, new.data=simple.cal.table, proximity=FALSE)#
-plot(forest.predict~cal.table$Concentration)
-cal.table <- data.frame(testcal[["Intensities"]], Concentration=testcal[["Values"]]$Fe.K.alpha)#
-set.seed(seed)#
-fit.lm <- train(Concentration~., data=cal.table, method="lm", metric=metric, preProc=c("center", "scale"), trControl=control)#
-importance <- varImp(fit.lm, scale=FALSE)#
-importance.frame <- as.data.frame(importance$importance)#
-#
-pull_test <- function(a.vector, a.value.position){#
-    scaled <- scale(a.vector)[,1]#
-    value <- scaled[a.value.position]#
-    scale.vector <- scaled[-a.value.position]#
-    ZScore <- (value-mean(scale.vector))/sd(scale.vector)#
-    pvalue <- pnorm(-abs(ZScore))#
-    is.sig <- pvalue < 0.05#
-    data.frame(Value=a.vector[a.value.position], ZScore=ZScore, pvalue=pvalue, Sig=is.sig)#
-}#
-Z_frame <- function(a.vector){#
-    do.call("rbind", lapply(seq(1, length(a.vector), 1), function(x) pull_test(a.vector, x)))#
-}#
-Z_choose <- function(a.vector){#
-    full <- Z_frame(a.vector)#
-    full[full$Sig,]#
-}#
-#
-variable_select <- function(intensities, values, analyte){#
-    control <- trainControl(method="cv", number=5)#
-    seed <- 7#
-    metric <- "RMSE"#
-    set.seed(seed)#
-    cal.table <- data.frame(intensities, Concentration=values[,analyte])#
-    fit.lm <- train(Concentration~., data=cal.table, method="lm", metric=metric, preProc=c("center", "scale"), trControl=control)#
-    importance <- varImp(fit.lm, scale=FALSE)#
-    importance.frame <- as.data.frame(importance$importance)#
-    elements <- rownames(importance$importance)#
-    elements[as.numeric(rownames(Z_choose(importance.frame$Overall)))]#
-}#
-variable_select_short <- function(importance){#
-    importance.frame <- as.data.frame(importance$importance)#
-    elements <- rownames(importance$importance)#
-    elements[as.numeric(rownames(Z_choose(importance.frame$Overall)))]#
-}#
-#
-simple.cal.table <- cal.table[,c("Concentration", "Fe.K.alpha", variable_select(intensities=testcal[["Intensities"]], values=testcal[["Values"]], analyte="Fe.K.alpha"))]#
-#
-best.model <- lm(Concentration~Fe.K.alpha + ., data=simple.cal.table)#
-forest.model <- randomForest(Concentration~Fe.K.alpha+., data=simple.cal.table, ntree=1000, replace=TRUE)#
-mcmc.model <- MCMCregress(Concentration~Fe.K.alpha + ., data=simple.cal.table)#
-#
-coefs <- apply(mcmc.model,2,median)[1:length(simple.cal.table)]#
-best.mcmc.mod <- best.model#
-best.mcmc.mod$coefficients <- coefs#
-#
-best.predict <- predict(best.model, new.data=simple.cal.table)#
-forest.predict <- predict(forest.model, new.data=simple.cal.table, proximity=FALSE)#
-mcmc.predict <- predict(best.mcmc.mod, new.data=simple.cal.table, proximity=FALSE)#
-#
-forest.model <- randomForest(Concentration~Fe.K.alpha+., data=cal.table, importance=TRUE, ntrees=500)#
-forest.predict <- predict(forest.model, new.data=simple.cal.table, proximity=FALSE)#
-plot(forest.predict~cal.table$Concentration)#
-y <- simple.cal.table[,"Concentration"]#
-1 - sum((y-forest.model$predicted)^2)/sum((y-mean(y))^2)#
-#
-importance.ggplot <- ggplot(importance.frame) + geom_density(aes(x=Overall))#
-####RainForest Test#
-#
-stuff <- readRDS("~/Desktop/firstFull.quant")#
-data <- stuff[["Spectra"]]#
-#
-test <- reshape2::dcast(data, Spectrum~Wavenumber)#
-test$Concentration <- c(1, 2, 3, 4, 5, 6, 7)#
-#
-#test <- apply(test, 2, as.numeric)#
-colnames(test) <- make.names(colnames(test))#
-rainforest.model <- randomForest(Concentration~., data=test[,-1], importance=TRUE, ntrees=500)#
-rainforest.predict <- predict(rainforest.model, new.data=test[,-1], proximity=FALSE)#
-plot(rainforest.predict~test$Concentration)
-call(forest.model)
-cal.table <- data.frame(testcal[["Intensities"]], Concentration=testcal[["Values"]]$Fe.K.alpha)
-testcal <- readRDS("~/Desktop/USDEarthCalTrain.quant")#
-#
-# prepare simple test suite#
-control <- trainControl(method="cv", number=5)#
-seed <- 7#
-metric <- "RMSE"#
-#
-# Linear regression#
-#
-cal.table <- data.frame(testcal[["Intensities"]], Concentration=testcal[["Values"]]$Fe.K.alpha)#
-set.seed(seed)#
-fit.lm <- train(Concentration~., data=cal.table, method="lm", metric=metric, preProc=c("center", "scale"), trControl=control)#
-importance <- varImp(fit.lm, scale=FALSE)#
-importance.frame <- as.data.frame(importance$importance)#
-#
-pull_test <- function(a.vector, a.value.position){#
-    scaled <- scale(a.vector)[,1]#
-    value <- scaled[a.value.position]#
-    scale.vector <- scaled[-a.value.position]#
-    ZScore <- (value-mean(scale.vector))/sd(scale.vector)#
-    pvalue <- pnorm(-abs(ZScore))#
-    is.sig <- pvalue < 0.05#
-    data.frame(Value=a.vector[a.value.position], ZScore=ZScore, pvalue=pvalue, Sig=is.sig)#
-}#
-Z_frame <- function(a.vector){#
-    do.call("rbind", lapply(seq(1, length(a.vector), 1), function(x) pull_test(a.vector, x)))#
-}#
-Z_choose <- function(a.vector){#
-    full <- Z_frame(a.vector)#
-    full[full$Sig,]#
-}#
-#
-variable_select <- function(intensities, values, analyte){#
-    control <- trainControl(method="cv", number=5)#
-    seed <- 7#
-    metric <- "RMSE"#
-    set.seed(seed)#
-    cal.table <- data.frame(intensities, Concentration=values[,analyte])#
-    fit.lm <- train(Concentration~., data=cal.table, method="lm", metric=metric, preProc=c("center", "scale"), trControl=control)#
-    importance <- varImp(fit.lm, scale=FALSE)#
-    importance.frame <- as.data.frame(importance$importance)#
-    elements <- rownames(importance$importance)#
-    elements[as.numeric(rownames(Z_choose(importance.frame$Overall)))]#
-}#
-variable_select_short <- function(importance){#
-    importance.frame <- as.data.frame(importance$importance)#
-    elements <- rownames(importance$importance)#
-    elements[as.numeric(rownames(Z_choose(importance.frame$Overall)))]#
-}#
-#
-simple.cal.table <- cal.table[,c("Concentration", "Fe.K.alpha", variable_select(intensities=testcal[["Intensities"]], values=testcal[["Values"]], analyte="Fe.K.alpha"))]#
-#
-best.model <- lm(Concentration~Fe.K.alpha + ., data=simple.cal.table)#
-forest.model <- randomForest(Concentration~Fe.K.alpha+., data=simple.cal.table, ntree=1000, replace=TRUE)#
-mcmc.model <- MCMCregress(Concentration~Fe.K.alpha + ., data=simple.cal.table)#
-#
-coefs <- apply(mcmc.model,2,median)[1:length(simple.cal.table)]#
-best.mcmc.mod <- best.model#
-best.mcmc.mod$coefficients <- coefs#
-#
-best.predict <- predict(best.model, new.data=simple.cal.table)#
-forest.predict <- predict(forest.model, new.data=simple.cal.table, proximity=FALSE)#
-mcmc.predict <- predict(best.mcmc.mod, new.data=simple.cal.table, proximity=FALSE)#
-#
-forest.model <- randomForest(Concentration~Fe.K.alpha+., data=cal.table, importance=TRUE, ntrees=500)#
-forest.predict <- predict(forest.model, new.data=simple.cal.table, proximity=FALSE)#
-plot(forest.predict~cal.table$Concentration)#
-y <- simple.cal.table[,"Concentration"]#
-1 - sum((y-forest.model$predicted)^2)/sum((y-mean(y))^2)#
-#
-importance.ggplot <- ggplot(importance.frame) + geom_density(aes(x=Overall))#
-####RainForest Test#
-#
-stuff <- readRDS("~/Desktop/firstFull.quant")#
-data <- stuff[["Spectra"]]#
-#
-test <- reshape2::dcast(data, Spectrum~Wavenumber)#
-test$Concentration <- c(1, 2, 3, 4, 5, 6, 7)#
-#
-#test <- apply(test, 2, as.numeric)#
-colnames(test) <- make.names(colnames(test))#
-rainforest.model <- randomForest(Concentration~., data=test[,-1], importance=TRUE, ntrees=500)#
-rainforest.predict <- predict(rainforest.model, new.data=test[,-1], proximity=FALSE)#
-plot(rainforest.predict~test$Concentration)
-summary(forest.model)
-test <- importance(forestModel)
-test <- importance(forest.model)
-test
-rownames(test)
-colnames(test)
-test$index <- seq(1, 33, 1)
-head(test)
-test <- as.data.frame(importance(forest.model))
-test$index <- seq(1, 33, 1)
-test
-length(test[,1])
-test$index <- seq(1, 34, 1)
-ggplot(test, aes(Energy, %IncMSE)) + geom_line()
-colnames(test) <- c("MSE", "NodePurity", "Index")
-ggplot(test, aes(Energy, MSE)) + geom_line()
-ggplot(test, aes(Index, MSE)) + geom_line()
-shiny::runApp("~/GitHub/CloudCal")
-x <- c(testcal <- readRDS("~/Desktop/USDEarthCalTrain.quant")#
+merge.list <- pbapply::pblapply(index, function(x) merge_spectra(ftir.data=subset(ftir.table, Spectrum==fileframe[x,2]), xrf.data=subset(xrf.table, Spectrum=fileframe[x,1]), energy.range=c(0,1)))
+merged.spectra <- merge.list[[1]]
+merged.plot <- ggplot(merged.spectra) +#
+geom_line(aes(Energy, CPS)) +#
+theme_light() +#
+scale_x_log10() +#
+scale_y_log10()#
+merged.plot
+head(xrf.table[,2])
+head(xrf.table[,4])
+head(xrf.table)
+test <- subset(ftir.table, Spectrum==fileframe[1,2]
 )
-testcal <- readRDS("~/Desktop/USDEarthCalTrain.quant")
-stuff <- readRDS("~/Desktop/firstFull.quant")#
-data <- stuff[["Spectra"]]
-head(data)
-testcal <- readRDS("~/Desktop/USDEarthCalTrain.quant")
-spectra <- testcal[["Spectra"]]
-head(spectra)
-testspectra <- spectrra
-testspectra <- spectra
-testspectra$Energy <- round(testspectra$Energy, 1)
-head(testspectra)
-?aggregate
-moretestspectra <- aggregate(testspectra, by=Energy, fun=mean)
-moretestspectra <- aggregate(testspectra, by=Energy, FUN=mean)
-moretestspectra <- aggregate(testspectra, by="Energy", FUN=mean)
-moretestspectra <- aggregate(testspectra, by=list(testspectra$Energy), FUN=mean)
-head(moretestspectra)
-length(testspectra[,1])
-length(moretestspectra[,1])
-moretestspectra <- aggregate(testspectra, by=list(testspectra$Energy, testspectra$Spectrum), FUN=mean)
-is.data.frame(moretestspectra)
-head(moretestspectra)
-length(moretestspectra[,1])
-33291/411
-33291/165888
-newspectra <- data.frame(Energy=morretestspectra$Group.1, CPS=morretestspectra$CPS, Spectrum=moretestspectra$Group.2)
-newspectra <- data.frame(Energy=moretestspectra$Group.1, CPS=moretestspectra$CPS, Spectrum=moretestspectra$Group.2)
-head(newspectra)
+head(test)
+length(test[,1])
+test2 <- subset(xrf.table, Spectrum=fileframe[1,1])
+head(test2)
+tail(test2)
+head(test2[,3])
+xrf.table[,] <- lapply(xrf.table, function(x) type.convert(as.character(x), as.is = TRUE))
+test2 <- subset(xrf.table, Spectrum=fileframe[1,1])
+tail(test2)
+head(test2[,3])
+test2 <- subset(xrf.table, Spectrum==fileframe[1,1])
+tail(test2)
+merge.list <- pbapply::pblapply(index, function(x) merge_spectra(ftir.data=subset(ftir.table, Spectrum==fileframe[x,2]), xrf.data=subset(xrf.table, Spectrum==fileframe[x,1]), energy.range=c(0,1)))
+merged.spectra <- merge.list[[1]]
+merged.plot <- ggplot(merged.spectra) +#
+geom_line(aes(Energy, CPS)) +#
+theme_light() +#
+scale_x_log10() +#
+scale_y_log10()#
+merged.plot
+tail(merged.spectra)
+merge.list <- pbapply::pblapply(index, function(x) merge_spectra(ftir.data=subset(ftir.table, Spectrum==fileframe[x,2]), xrf.data=subset(xrf.table, Spectrum==fileframe[x,1]), energy.range=c(0,10)))
+merged.spectra <- merge.list[[1]]
+merged.plot <- ggplot(merged.spectra) +#
+geom_line(aes(Energy, CPS)) +#
+theme_light() +#
+scale_x_log10() +#
+scale_y_log10()#
+merged.plot
+merge.frame <- do.call("rbind", merge.list)
+length(merge.frame[,1])
+shiny::runApp("~/GitHub/eQuant")
+manure57xrftrace <- csvFrame(filepath="/Users/lee/Dropbox/Documents/ICRAF/Calibration Folders/ICRAF 5i 900F4473 Cal/forCals/Manure Trace/TR-MA-057.CSV", filename="man57xrf")#
+manure57xrflight <- csvFrame(filepath="/Users/lee/Dropbox/Documents/ICRAF/Calibration Folders/ICRAF 5i 900F4473 Cal/forCals/Manure Light/MAJ-MA-057.CSV", filename="man57xrf")#
+manure57ftir <- readOpusData(filepath="/Users/lee/Dropbox/Documents/ICRAF/2018 Data/FTIR-XRF Comparison/Manure FTIR Data/ZnSe Alpha Spectra for 64 ICRAF Samples/MA-057.0", filename="man57ftir")#
+#
+merged.spectra <- merge_spectra(ftir.data=manure57ftir, xrf.data=manure57xrflight, energy.range=c(0, 10))#
+merged.plot <- ggplot(merged.spectra) +#
+geom_line(aes(Energy, CPS)) +#
+theme_light() +#
+scale_x_log10() +#
+scale_y_log10()#
+merged.plot
+merge_spectra <- function(ftir.data, xrf.data, energy.range){#
+    ftir.data$Energy <- wave_to_eV(ftir.data$Wavenumber)#
+    xrf.data$Wavenumber <- eV_to_wave(xrf.data$Energy)#
+    colnames(ftir.data)[3] <- "CPS"#
+    ftir.data$CPS <- ftir.data$CPS^5#
+    xrf.subset <- subset(xrf.data, Energy > wave_to_eV(min(ftir.data$Wavenumber)))#
+    merged.data <- rbind(ftir.data, xrf.subset)#
+    subset(merged.data, Energy>=energy.range[1] & Energy<= energy.range[2])#
+}
+merged.spectra <- merge_spectra(ftir.data=manure57ftir, xrf.data=manure57xrflight, energy.range=c(0, 10))#
+merged.plot <- ggplot(merged.spectra) +#
+geom_line(aes(Energy, CPS)) +#
+theme_light() +#
+scale_x_log10() +#
+scale_y_log10()#
+merged.plot
+wave_to_eV(400)
+wave_to_eV <- function(wavelength){#
+    v = c/wavelength#
+    E = h*v#
+    E/1e-9#
+}#
+#
+eV_to_wave <- function(eV){#
+    ((h*c)/eV)/1e-9#
+}
+wave_to_eV(400)
+wave_to_eV(4000)
+c <- 299792458#
+h <- 4.1357-15#
+v <- 1#
+#
+wave_to_eV <- function(wavelength){#
+    v = c/wavelength#
+    E = h*v#
+    E/1e-9#
+}#
+#
+eV_to_wave <- function(eV){#
+    ((h*c)/eV)/1e-9#
+}
+wave_to_eV(4000)
+wave_to_eV(400)
+wave_to_eV <- function(wavelength){#
+    v = c/wavelength#
+    E = h*v#
+E}
+wave_to_eV(400)
+wave_to_eV <- function(wavelength){#
+    v = c/wavelength#
+    E = h*v#
+    E*1e-9#
+}
+wave_to_eV(400)
+h*c
+c <- 299792458/1e-9
+h*c
+h <- 4.1357e-15
+h*c
+wave_to_eV <- function(wavelength){#
+    v = c/wavelength#
+    E = h*v#
+    E/1e-9#
+}
+wave_to_eV(400)
+wave_to_eV <- function(wavelength){#
+    v = c/wavelength#
+    E = h*v#
+    E#
+}
+wave_to_eV(400)
+shiny::runApp("~/GitHub/eQuant")
+eV_to_wave(3.1)
+wave_to_eV <- function(wavelength){#
+    v = c/wavelength#
+    E = h*v#
+    E#
+}
+wave_to_eV(400)
+wave_to_eV <- function(wavelength){#
+    v = c/wavelength#
+    E = h*v#
+    E/1e-9#
+}
+wave_to_eV(400)
+shiny::runApp("~/GitHub/eQuant")
+update.packages(ask=FALSE)
+shiny::runApp("~/GitHub/eQuant")
+update.packages(ask=FALSE)
+shiny::runApp("~/GitHub/eQuant")
+?merge
+shiny::runApp("~/GitHub/eQuant")
+?sprintf
+shiny::runApp("~/GitHub/eQuant")
+index <- make.names(sprintf("%04d", seq(1, 13, 1)))
+index
+shiny::runApp("~/GitHub/eQuant")
+sprintf("%04d", 5)
+shiny::runApp("~/GitHub/eQuant")
+make.names(sprintf("%04d", 5))
+shiny::runApp("~/GitHub/eQuant")
+update.packages(ask=FALSE)
+blank.frame <- data.frame(#
+    Name=as.vector(as.character(rep("", 25))),#
+    EnergyMin=as.numeric(rep("", 25)),#
+    EnergyMax=as.numeric(rep("", 25)),#
+    stringsAsFactors = FALSE#
+    )
+blank.frame
+table <- blank.frame[complete.cases(blank.frame),]
+table
+length(table[,1])
+shiny::runApp("~/GitHub/CloudCal")
+test <- readRDS("~/Desktop/USDEarthCalTrainBetter.quant")
+"Definitions" %in% ls(test)
+"Spectra" %in% ls(test)
+is.true("Definitions" %in% ls(test))
+"Definitions" %in% ls(test) = FALSE
+!"Definitions" %in% ls(test)
+shiny::runApp("~/GitHub/CloudCal")
+shiny::runApp("~/GitHub/eQuant")
+update.packages(ask=FALSE)
 shiny::runApp("~/GitHub/CloudCal")
 shiny::runApp("~/GitHub/CloudCal-Training")
-testcal <- readRDS("~/Desktop/USDEarthCalTrain.quant")#
-spectra <- testcal[["Spectra"]]#
-testspectra <- spectra#
-testspectra$Energy <- round(testspectra$Energy, 1)
-head(testspectra)
-testspectra <- data.table(testspectra)
-testspectra
-testierspectra <- testspectra[, j=list(mean(CPS, na.rm = TRUE),by = list(Spectrum,Energy)]
-testierspectra <- testspectra[, mean(CPS, na.rm = TRUE), by = list(Spectrum,Energy)]
-testierspectra
-testierspectra <- testspectra[, CPS=mean(CPS, na.rm = TRUE), by = list(Spectrum,Energy)]
-testierspectra <- testspectra[, list(CPS=mean(CPS, na.rm = TRUE)), by = list(Spectrum,Energy)]
-testierspectra
+shiny::runApp("~/GitHub/eQuant")
+shiny::runApp("~/GitHub/CloudCal")
 shiny::runApp("~/GitHub/CloudCal-Training")
 shiny::runApp("~/GitHub/CloudCal")
-shiny::runApp("~/GitHub/cloudFITR")
-shiny::runApp("~/GitHub/cloudFTIR")
-shiny::runApp("~/GitHub/cloudFTIR")
+rsconnect::deployApp("~/GitHub/CloudCal")
 shiny::runApp("~/GitHub/CloudCal")
+test <- readRDS("~/Dropbox/Documents/CloudCal Evaluation/Quant Files/machine900F4197Obsidian.quant")
+concentration.table <- test[["Values"]]
+concentration.table <- concentration.table[complete.cases(concentration.table[,input$calcurveelement]),]
+concentration.table <- concentration.table[complete.cases(concentration.table[,"Cl.K.alpha"]),]
+length(concentration.table[,1])
+concentration.table[] <- lapply(concentration.table, function(x){replace(x, x == 0, NA)}
+)
+concentration.table <- concentration.table[complete.cases(concentration.table[,"Cl.K.alpha"]),]
+length(concentration.table[,1])
+spectra.line.table <- test[["Intensities"]]
+spectra.line.table <- spectra.line.table[complete.cases(concentration.table[, "Cl.K.alpha"]),]
+length(spectra.line.table[,1])
+concentration.table$Spectrum
+spectra.line.table <- spectra.line.table[spectra.line.table$Spectrum %in% concentration.table$Spectrum, ]
+length(spectra.line.table[,1])
+concentration.table <- test[["Values"]]
+concentration.table[] <- lapply(concentration.table, function(x){replace(x, x == 0, NA)})
+spectra.line.table <- test[["Intensities"]]
+spectra.line.table$Spectrum <- concentration.table$Spectrum
+concentration.table <- concentration.table[complete.cases(concentration.table[,"Cl.K.alpha"]),]
+spectra.line.table <- spectra.line.table[spectra.line.table$Spectrum %in% concentration.table$Spectrum, ]
+length(spectra.line.table[,1])
+update.packages(ask=FALSE)
+shiny::runApp("~/GitHub/CloudCal")
+x <- c(3, 4, 5)
+y <- c(7, 2, 5)
+xummary(lm(y~x))
+xy.lm <- lm(y~x)
+summary(xy.lm)
+summary(xy.lm)$coef
+summary(xy.lm)$coef[1]
+summary(xy.lm)$coef[0]
+summary(xy.lm)$coef[2]
+x <- 1
+x <- c(3, 4, 8, 5, 2)
+a <- 1
+Closest(x, a, which=TRUE)
+install.packages("DescTools")
+library(DescTools)
+Closest(x, a, which=TRUE)
+shiny::runApp("~/GitHub/CloudCal")
+shiny::runApp("~/GitHub/eQuant")
+update.packages(ask=FALSE)
+x <- c(1, 2, 3, 4, 5)
+Closest(x, 1, which=TRUE)
+DescTools::Closest(x, 1, which=TRUE)
+DescTools::Closest(x, 1)
+library(DescTools)
+?Closest
+?order
+?sort
+x <- c(4, 3, 6, 3)
+y <- c(7, 4, 7, 2)
+test.lm <- summary(lm(y~x))
+test.lm
+test.lm$r.squared
+shiny::runApp("~/GitHub/CloudCal")
+update.packages(ask=FALSE)
+x <- c(5, 2, 1, 7, 2)
+y <- c(7, 5, 2, 7, 9)
+summary(lm(y~x))
+summary(lm(y~x))$coef
+summary(lm(y~x))$coef[2]
+test.lm <- lm(y~x)
+predict(test.lm, newdata=c(1, 2, 3, 4, 5))
+predict(test.lm, newdata=data.frame(c(1, 2, 3, 4, 5)))
+predict(test.lm, newdata=data.frame(c(1, 2, 3, 4, 5)), interval='confidence')
+predict(test.lm, newdata=data.frame(c(1, 2, 3, 4, 5)), interval='confidence')$fit
+predict(test.lm, newdata=data.frame(c(1, 2, 3, 4, 5)), interval='confidence')[,'fit']
+sumary(test.lm)
+test.lm$r.squared
+summary(test.lm)$r.squared
+summary(test.lm)$adj.r.squared
+library(DescTools)
+?Closest
+?predict
+?predict.lm
+lm_eqn_val = function(m) {#
+    l <- list(a = format(coef(m)[1], digits = 2),#
+    b = format(abs(coef(m)[2]), digits = 2),#
+    r2 = format(summary(m)$r.squared, digits = 3));#
+        eq <- substitute(italic(y) == a + b %.% italic(x)*","~~italic(r)^2~"="~r2,l)#
+    as.character(as.expression(eq));#
+}
+lm_eqn_val(test.lm)
+eq <- lm_eqn_val(test.lm)
+eq2 <- gsub("c", "", eq)
+eq2 <- gsub("c()", "", eq)
+eq2 <- gsub("c(", "", eq)
+eq2 <- gsub('c(', "", eq)
+eq2 <- gsub("c(", "", eq)
+eq2 <- gsub("c(", "", eq)   eq <- gsub("^c\\(|\\)$", "", eq)
+eq <- gsub("^c\\(|\\)$", "", eq)
+eq
+as.character(as.expression(eq))
+shiny::runApp("~/GitHub/CloudCal")
+x=c("a", "b", "c")#
+y=list(c(1,2,3), c("f","g"), c(1,"r","$"))#
+df = as.data.frame(x)#
+df$y = y#
+p = sprintf('{"name":"%s", "import": [%s]}', df$x, df$y)#
+p <- gsub("\\[c\\("," \\[",p)#
+p <- gsub("\\)\\]","\\]",p)
+p
+shiny::runApp("~/GitHub/CloudCal")
+m <- test.lm
+m
+l <- list(a = format(coef(m)[1], digits = 2),
+l
+)
+l <- list(a = format(coef(m)[1], digits = 2)
+)
+l <- list(a = format(coef(m)[1], digits = 2),#
+    b = format(abs(coef(m)[2]), digits = 2),#
+    r2 = format(summary(m)$r.squared, digits = 3))
+l
+eq <- substitute(italic(C)[i] == a + b %.% italic(I)[i]*","~~italic(r)^2~"="~r2,l)
+eq
+?substitute
+as.character(as.expression(eq))
+test <- as.character(as.expression(eq))
+test
+gsub("\\c\\(", "", test)
+shiny::runApp("~/GitHub/CloudCal")
+update.packages(ask=FALSE)
+?pdf
+?tif
+?tiff
+test <- readRDS("~/Dropbox/Documents/University of West Virginia/Moisture_Manure samples/quant data/yadavWater.quant")
+ls(test)
+test <- readRDS("~/Dropbox/Documents/University of West Virginia/Moisture_Manure samples/quant data/yadavWater.quant")
+ls(test)
+test$Definitions
+shiny::runApp("~/GitHub/CloudCal")
+update.packages(ask=FALSE)
+shiny::runApp("~/GitHub/CloudCal")
+?nearPoints
+update.packages(ask=FALSE)
+options("device")
+shiny::runApp("~/GitHub/CloudCal", display.mode="showcase")
+shiny::runApp("~/GitHub/CloudCal")
+install_version("ggplot2", version = "2.2.1", repos = "http://cran.us.r-project.org", checkBuilt=TRUE)
+devtools::install_version("ggplot2", version = "2.2.1", repos = "http://cran.us.r-project.org", checkBuilt=TRUE)
+shiny::runApp("~/GitHub/CloudCal")
+shiny::runApp("~/GitHub/CloudCal-Training")
 shiny::runApp("~/GitHub/CloudCal-Training")
